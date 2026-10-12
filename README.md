@@ -33,6 +33,7 @@ Use **`/combat`** for player status and **`/combatadmin`** for the admin menu. T
 ## Guides
 
 - [Player and administrator guide](GUIDE.md)
+- [Staff mode and events](STAFF_EVENTS_GUIDE.md)
 - [Player guide on the Kingdoms wiki](https://github.com/tuledeemon/Kingdoms/wiki/Combat-and-Teleports)
 - [Building and verification](BUILDING.md)
 - [Changelog](CHANGELOG.md)
