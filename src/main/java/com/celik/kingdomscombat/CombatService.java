@@ -48,11 +48,12 @@ public final class CombatService {
     public boolean toggleStaffMode(ServerPlayer p){
         if(!allowed(p.createCommandSourceStack(),config.staffModePermission,config.adminLevel))throw new IllegalArgumentException("Staff permission required.");
         boolean enabled=staffModes.add(p.getUUID());
-        if(enabled){ledger.clearCombat(p.getUUID());save();}else staffModes.remove(p.getUUID());
+        if(enabled){ledger.data.tags.remove(p.getUUID());save();}else staffModes.remove(p.getUUID());
         return enabled;
     }
     public static boolean admin(CommandSourceStack source,int level){return source.permissions().hasPermission(switch(level){case 1->Permissions.COMMANDS_MODERATOR;case 3->Permissions.COMMANDS_ADMIN;case 4->Permissions.COMMANDS_OWNER;default->Permissions.COMMANDS_GAMEMASTER;});}
     public boolean bypass(ServerPlayer p){
+        if(staffMode(p))return true;
         if(config.operatorBypass&&admin(p.createCommandSourceStack(),config.adminLevel))return true;
         return config.respectBypassPermission&&!config.bypassPermission.isBlank()&&FabricLoader.getInstance().isModLoaded("fabric-permissions-api-v0")&&PermissionHook.bypass(p,config.bypassPermission);
     }
@@ -61,7 +62,7 @@ public final class CombatService {
         if(server.isSameThread()&&player.isAlive()&&!player.isSpectator())exposure(player);
         return currentStatus(player);
     }
-    private TagLedger.Status currentStatus(ServerPlayer p){var current=ledger.status(p.getUUID(),now());return staffMode(p)?new TagLedger.Status(0,current.warMillis(),current.airDropMillis(),Set.of()):current;}
+    private TagLedger.Status currentStatus(ServerPlayer p){return staffMode(p)?new TagLedger.Status(0,0,0,Set.of()):ledger.status(p.getUUID(),now());}
     public void exposure(ServerPlayer p){
         if(!config.enabled||bypass(p)||!p.isAlive()||p.isSpectator())return;
         long now=now();var before=ledger.status(p.getUUID(),now);

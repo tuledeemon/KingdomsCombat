@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.0.2
+
+- Staff mode now bypasses all combat, war and AirDrop restrictions and clears existing timers, including their cooldown tails.
+- Apply the exemption to HuskHomes callbacks and the event teleport button. Staff permissions and reset-on-disconnect behavior remain in effect.
+
 ## 1.0.1
 
 - Add the staff-only `/staffmode` toggle. Enabling it clears the staff member's PvP tag, stops staff interactions starting combat tags, and prevents addon logout deaths.

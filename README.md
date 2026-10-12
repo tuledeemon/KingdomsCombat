@@ -4,7 +4,7 @@ A separate **server-only Fabric 26.2 addon** for [Kingdoms](https://github.com/t
 
 **No client mod or resource pack is needed.** Custom menus, messages, titles and the countdown use Kingdoms' small-caps style.
 
-**1.0.1:** LuckPerms-aware `/staffmode` and `/eventhost`. Staff mode clears PvP tags and prevents combat-log deaths. Event hosts set a location and description, then announce timed events with a global boss bar, titles and sounds. `/event` opens the details and a teleport button that respects combat, war and AirDrop restrictions.
+**1.0.2:** LuckPerms-aware `/staffmode` and `/eventhost`. Staff mode clears all timers and bypasses combat, war and AirDrop restrictions, including teleport locks. Event hosts set a location and description, then announce timed events with a global boss bar, titles and sounds. `/event` opens the details and a teleport button that respects combat, war and AirDrop restrictions.
 
 ## Default rules
 
