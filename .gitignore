@@ -1,0 +1,9 @@
+.gradle/
+build/
+libs/
+research/
+run-test/
+release/
+verification/
+*.log
+__pycache__/

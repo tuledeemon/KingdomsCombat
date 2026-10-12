@@ -1,0 +1,5 @@
+{
+  "schemaVersion":1,"id":"kingdoms_combat_test","version":"1.0.0","name":"Kingdoms Combat Integration Checks","environment":"server",
+  "entrypoints":{"main":["com.celik.kingdomscombat.CombatIntegration"]},
+  "depends":{"kingdoms_combat":"*"}
+}
