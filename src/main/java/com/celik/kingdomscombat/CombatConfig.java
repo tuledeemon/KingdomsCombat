@@ -28,6 +28,13 @@ public final class CombatConfig {
     public String tagSound="minecraft:block.note_block.pling", endSound="minecraft:block.note_block.chime";
     public float soundVolume=.6f;
     public int adminLevel=2;
+    public String staffModePermission="kingdomscombat.staffmode",eventHostPermission="kingdomscombat.eventhost",adminPermission="kingdomscombat.admin";
+    public int eventMaxSeconds=86400;
+    public int eventTeleportTimeoutSeconds=15;
+    public int eventDescriptionMaxLength=2048;
+    public String eventColor="light_purple",eventBossBarColor="purple";
+    public String eventBarTemplate="event • {name} • {time}",eventStartMessage="{name} has started. Duration: {time}.",eventEndMessage="{name} has ended.",eventStopMessage="{name} was stopped.";
+    public boolean eventTitles=true,eventSounds=true,eventChat=true;
     public boolean operatorBypass=false;
     public String bypassPermission="kingdomscombat.bypass";
     public boolean respectBypassPermission=true, huskHomesTeleportGuard=true;
@@ -37,6 +44,10 @@ public final class CombatConfig {
         if(pollTicks<1||pollTicks>20||actionBarIntervalTicks<1||actionBarIntervalTicks>100||saveIntervalSeconds<1||saveIntervalSeconds>300)throw new IllegalArgumentException("Invalid update/save interval.");
         if(!Double.isFinite(airDropRadius)||airDropRadius<1||airDropRadius>10000||!Double.isFinite(airDropVerticalTolerance)||airDropVerticalTolerance< -1||airDropVerticalTolerance>10000)throw new IllegalArgumentException("Invalid AirDrop radius/height tolerance.");
         if(adminLevel<1||adminLevel>4||!Float.isFinite(soundVolume)||soundVolume<0||soundVolume>4)throw new IllegalArgumentException("Invalid admin level or volume.");
+        if(eventMaxSeconds<1||eventMaxSeconds>604800)throw new IllegalArgumentException("Event maximum must be 1–604800 seconds.");
+        if(eventTeleportTimeoutSeconds<1||eventTeleportTimeoutSeconds>120)throw new IllegalArgumentException("Event teleport timeout must be 1–120 seconds.");
+        if(eventDescriptionMaxLength<1||eventDescriptionMaxLength>4096)throw new IllegalArgumentException("Event description length must be 1–4096 characters.");
+        if(!Set.of("pink","blue","red","green","yellow","purple","white").contains(eventBossBarColor))throw new IllegalArgumentException("Invalid event boss bar color.");
         if(blockedCommands==null||blockedCommands.size()>512||blockedCommands.stream().anyMatch(s->s==null||s.isBlank()||s.length()>256))throw new IllegalArgumentException("Invalid blocked command list.");
         for(var field:CombatConfig.class.getFields())try{if(field.getType()==String.class&&(field.get(this)==null||((String)field.get(this)).length()>1024))throw new IllegalArgumentException("Invalid text setting: "+field.getName());}catch(IllegalAccessException e){throw new IllegalStateException(e);}
     }

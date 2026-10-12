@@ -25,11 +25,13 @@ import java.util.function.LongSupplier;
 public final class CombatService {
     public final MinecraftServer server;
     public final TagLedger ledger;
+    public final HostedEvents events;
     public CombatConfig config;
     public final Path configFile,stateFile;
     private final LongSupplier clock;
     private final Map<UUID,TagLedger.Status> previous=new HashMap<>();
     private final Map<UUID,Long> lastDenial=new HashMap<>();
+    private final Set<UUID> staffModes=new HashSet<>();
     private int ticks;
     private long lastSave;
     public boolean stopping,healthy=true;
@@ -38,8 +40,17 @@ public final class CombatService {
     CombatService(MinecraftServer server,CombatConfig config,Path configFile,Path stateFile,LongSupplier clock){
         this.server=server;this.config=config;this.configFile=configFile;this.stateFile=stateFile;this.clock=clock;
         ledger=new TagLedger(CombatStore.read(stateFile,TagLedger.Data.class,new TagLedger.Data()));ledger.prune(now());save();
+        events=new HostedEvents(this,stateFile.resolveSibling("event.json"));
     }
     public long now(){return clock.getAsLong();}
+    public static boolean allowed(CommandSourceStack source,String permission,int level){boolean fallback=admin(source,level);return !permission.isBlank()&&FabricLoader.getInstance().isModLoaded("fabric-permissions-api-v0")?PermissionHook.allowed(source,permission,fallback):fallback;}
+    public boolean staffMode(ServerPlayer p){return staffModes.contains(p.getUUID())&&allowed(p.createCommandSourceStack(),config.staffModePermission,config.adminLevel);}
+    public boolean toggleStaffMode(ServerPlayer p){
+        if(!allowed(p.createCommandSourceStack(),config.staffModePermission,config.adminLevel))throw new IllegalArgumentException("Staff permission required.");
+        boolean enabled=staffModes.add(p.getUUID());
+        if(enabled){ledger.clearCombat(p.getUUID());save();}else staffModes.remove(p.getUUID());
+        return enabled;
+    }
     public static boolean admin(CommandSourceStack source,int level){return source.permissions().hasPermission(switch(level){case 1->Permissions.COMMANDS_MODERATOR;case 3->Permissions.COMMANDS_ADMIN;case 4->Permissions.COMMANDS_OWNER;default->Permissions.COMMANDS_GAMEMASTER;});}
     public boolean bypass(ServerPlayer p){
         if(config.operatorBypass&&admin(p.createCommandSourceStack(),config.adminLevel))return true;
@@ -48,8 +59,9 @@ public final class CombatService {
     public TagLedger.Status status(ServerPlayer player){
         if(!config.enabled||bypass(player))return new TagLedger.Status(0,0,0,Set.of());
         if(server.isSameThread()&&player.isAlive()&&!player.isSpectator())exposure(player);
-        return ledger.status(player.getUUID(),now());
+        return currentStatus(player);
     }
+    private TagLedger.Status currentStatus(ServerPlayer p){var current=ledger.status(p.getUUID(),now());return staffMode(p)?new TagLedger.Status(0,current.warMillis(),current.airDropMillis(),Set.of()):current;}
     public void exposure(ServerPlayer p){
         if(!config.enabled||bypass(p)||!p.isAlive()||p.isSpectator())return;
         long now=now();var before=ledger.status(p.getUUID(),now);
@@ -58,6 +70,7 @@ public final class CombatService {
     }
     public void tick(){
         ticks++;if(stopping)return;
+        if(ticks%20==0)events.tick();
         if(ticks%config.pollTicks==0){
             for(ServerPlayer p:server.getPlayerList().getPlayers()){
                 var before=previous.getOrDefault(p.getUUID(),new TagLedger.Status(0,0,0,Set.of()));var after=status(p);previous.put(p.getUUID(),after);
@@ -82,7 +95,7 @@ public final class CombatService {
         previous.put(attacker.getUUID(),ledger.status(attacker.getUUID(),now));previous.put(victim.getUUID(),ledger.status(victim.getUUID(),now));
         save();
     }
-    private boolean eligible(ServerPlayer p){return p.isAlive()&&!bypass(p)&&(config.tagSpectators||!p.isSpectator())&&(config.tagCreativePlayers||!p.isCreative());}
+    private boolean eligible(ServerPlayer p){return p.isAlive()&&!bypass(p)&&!staffMode(p)&&(config.tagSpectators||!p.isSpectator())&&(config.tagCreativePlayers||!p.isCreative());}
     private void started(ServerPlayer p){
         tell(p,format(config.taggedMessage,p));if(config.titles&&p.connection!=null){p.connection.send(new ClientboundSetTitlesAnimationPacket(5,30,10));p.connection.send(new ClientboundSetTitleTextPacket(text("Combat",config.combatColor)));p.connection.send(new ClientboundSetSubtitleTextPacket(component(p)));}sound(p,config.tagSound);
     }
@@ -94,14 +107,15 @@ public final class CombatService {
     public void death(ServerPlayer p,DamageSource source){UUID killer=source.getEntity() instanceof ServerPlayer other?other.getUUID():null;ledger.death(p.getUUID(),killer,config);dirty=true;save();}
     public void disconnect(ServerPlayer p){
         var current=status(p);
-        if(config.enabled&&healthy&&(!stopping||config.punishDuringShutdown)&&p.isAlive()&&!bypass(p)&&TagLedger.penalty(current,config)){
+        if(config.enabled&&healthy&&(!stopping||config.punishDuringShutdown)&&p.isAlive()&&!bypass(p)&&!staffMode(p)&&TagLedger.penalty(current,config)){
             UUID penalty=UUID.randomUUID();ledger.data.logoutPenalties.put(p.getUUID(),penalty);save();
             ((PenaltyReceipt)p).combat$penaltyReceipt(penalty);logoutDeath(p);
             if(config.broadcastLogoutDeaths)server.getPlayerList().broadcastSystemMessage(message(config.logoutMessage.replace("{player}",p.getName().getString()),config.errorColor),false);
         }
-        previous.remove(p.getUUID());lastDenial.remove(p.getUUID());dirty=true;save();
+        events.leave(p);staffModes.remove(p.getUUID());previous.remove(p.getUUID());lastDenial.remove(p.getUUID());dirty=true;save();
     }
     public void join(ServerPlayer p){
+        staffModes.remove(p.getUUID());
         UUID penalty=ledger.data.logoutPenalties.get(p.getUUID());
         if(penalty!=null){
             if(!penalty.equals(((PenaltyReceipt)p).combat$penaltyReceipt())){((PenaltyReceipt)p).combat$penaltyReceipt(penalty);if(p.isAlive())logoutDeath(p);}
@@ -109,8 +123,10 @@ public final class CombatService {
             else{ledger.data.logoutPenalties.remove(p.getUUID());save();}
         }
         exposure(p);previous.put(p.getUUID(),status(p));
+        events.join(p);
     }
     private void logoutDeath(ServerPlayer p){p.setHealth(0);p.die(p.damageSources().genericKill());}
+    public boolean logoutPunished(ServerPlayer p){return !staffMode(p)&&TagLedger.penalty(status(p),config);}
     public boolean allowTeleport(ServerPlayer p,boolean notify){
         if(!config.enabled||bypass(p))return true;
         boolean blocked=!healthy||status(p).active();if(blocked&&notify)denied(p);return !blocked;
@@ -133,7 +149,7 @@ public final class CombatService {
     }
     public void denied(ServerPlayer p){long now=now();if(now-lastDenial.getOrDefault(p.getUUID(),0L)<1000)return;lastDenial.put(p.getUUID(),now);if(p.connection!=null)p.sendSystemMessage(message(format(config.blockedMessage,p),config.errorColor));}
     public String reasons(TagLedger.Status s){return Ui.caps(String.join(" / ",s.reasons().stream().map(Enum::name).toList()));}
-    public String format(String pattern,ServerPlayer p){var s=ledger.status(p.getUUID(),now());return pattern.replace("{seconds}",Integer.toString(s.seconds())).replace("{time}",Ui.clock(s.millis())).replace("{reasons}",reasons(s)).replace("{player}",p.getName().getString()).replace("{opponents}",Integer.toString(s.opponents().size()));}
+    public String format(String pattern,ServerPlayer p){var s=currentStatus(p);return pattern.replace("{seconds}",Integer.toString(s.seconds())).replace("{time}",Ui.clock(s.millis())).replace("{reasons}",reasons(s)).replace("{player}",p.getName().getString()).replace("{opponents}",Integer.toString(s.opponents().size()));}
     public Component component(ServerPlayer p){var s=status(p);if(!s.active())return Component.empty();String color=s.combatMillis()>0?config.combatColor:s.warMillis()>0?config.warColor:config.airDropColor;return text(format(config.actionBarTemplate,p),color);}
     public Component append(Component original,ServerPlayer p){
         if(!config.actionBar||!status(p).active())return original;
@@ -143,9 +159,9 @@ public final class CombatService {
     public static Component text(String value,String color){ChatFormatting style;try{style=ChatFormatting.valueOf(color.toUpperCase(Locale.ROOT));}catch(Exception e){style=ChatFormatting.RED;}return Component.literal(Ui.caps(value)).withStyle(style).withStyle(s->s.withItalic(false));}
     private Component message(String value,String color){return config.prefix.isBlank()?text(value,color):Component.literal("["+Ui.caps(config.prefix)+"] ").withStyle(ChatFormatting.DARK_GRAY).append(text(value,color));}
     private void tell(ServerPlayer p,String value){if(config.chatNotifications&&p.connection!=null){var status=ledger.status(p.getUUID(),now());p.sendSystemMessage(message(format(value,p),status.combatMillis()>0?config.combatColor:status.warMillis()>0?config.warColor:config.airDropColor));}}
-    private void sound(ServerPlayer p,String id){if(!config.sounds||p.connection==null)return;var key=Identifier.tryParse(id);if(key!=null)BuiltInRegistries.SOUND_EVENT.get(key).ifPresent(sound->p.connection.send(new ClientboundSoundPacket(sound,SoundSource.UI,p.getX(),p.getY(),p.getZ(),config.soundVolume,1,p.getRandom().nextLong())));}
+    void sound(ServerPlayer p,String id){if(!config.sounds||p.connection==null)return;var key=Identifier.tryParse(id);if(key!=null)BuiltInRegistries.SOUND_EVENT.get(key).ifPresent(sound->p.connection.send(new ClientboundSoundPacket(sound,SoundSource.UI,p.getX(),p.getY(),p.getZ(),config.soundVolume,1,p.getRandom().nextLong())));}
     public void save(){try{TagLedger.validate(ledger.data);CombatStore.write(stateFile,ledger.data);dirty=false;lastSave=now();healthy=true;}catch(RuntimeException e){healthy=false;KingdomsCombat.LOG.error("Combat persistence failed; restricted teleports remain blocked",e);throw e;}}
     public void reload(){CombatConfig next=CombatStore.read(configFile,CombatConfig.class,new CombatConfig());next.validate();config=next;CombatStore.write(configFile,next);}
     public void replaceConfig(CombatConfig next){next.validate();CombatStore.write(configFile,next);config=next;}
-    public void stop(){stopping=true;save();}
+    public void stop(){stopping=true;events.hide();save();}
 }

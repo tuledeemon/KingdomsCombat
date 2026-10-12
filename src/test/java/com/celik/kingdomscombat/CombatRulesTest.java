@@ -41,4 +41,8 @@ final class CombatRulesTest {
     @ParameterizedTest @ValueSource(strings={"homelist","homes","sethome base","delhome base","tpdecline","tpignore","say home","combat","combatadmin clear Player"}) void nonTeleportCommandsStayAvailable(String command){assertFalse(CommandRules.matches(command,config.blockedCommands));}
     @Test void commandPathAndWildcardSettingsWork(){assertTrue(CommandRules.matches("myplugin travel home",List.of("myplugin travel")));assertFalse(CommandRules.matches("myplugin status",List.of("myplugin travel")));assertTrue(CommandRules.matches("example:warp base",List.of("example:*")));}
     @Test void removingCommandRuleAllowsIt(){config.blockedCommands.remove("home");assertFalse(CommandRules.matches("home base",config.blockedCommands));}
+    @ParameterizedTest @ValueSource(strings={"600","10m","10M","1.5m","1h30m","30s","1d"}) void eventDurationAliasesWork(String time){assertTrue(HostedEventRules.seconds(time,86400)>0);}
+    @Test void eventDurationUsesActualUnits(){assertEquals(600,HostedEventRules.seconds("10m",86400));assertEquals(90,HostedEventRules.seconds("1.5m",86400));assertEquals(5400,HostedEventRules.seconds("1h30m",86400));}
+    @ParameterizedTest @ValueSource(strings={"","0","-1m","1x","NaN","1m garbage","2d"}) void invalidEventDurationsAreRejected(String time){assertThrows(IllegalArgumentException.class,()->HostedEventRules.seconds(time,86400));}
+    @Test void invalidEventSettingsAreRejected(){config.eventMaxSeconds=0;assertThrows(IllegalArgumentException.class,config::validate);config.eventMaxSeconds=86400;config.eventBossBarColor="missing";assertThrows(IllegalArgumentException.class,config::validate);}
 }

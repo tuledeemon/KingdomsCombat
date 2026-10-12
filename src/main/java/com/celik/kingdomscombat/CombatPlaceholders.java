@@ -22,7 +22,11 @@ public final class CombatPlaceholders {
         value("opponent_count",p->Integer.toString(status(p).opponents().size()));
         value("opponents",p->Ui.caps(String.join(", ",status(p).opponents().stream().map(id->{var other=p.level().getServer().getPlayerList().getPlayer(id);return other==null?id.toString():other.getName().getString();}).sorted().toList())));
         value("can_teleport",p->Boolean.toString(KingdomsCombat.service.allowTeleport(p,false)));
-        value("logout_punished",p->Boolean.toString(TagLedger.penalty(status(p),KingdomsCombat.service.config)));
+        value("logout_punished",p->Boolean.toString(KingdomsCombat.service.logoutPunished(p)));
+        value("staffmode",p->Boolean.toString(KingdomsCombat.service.staffMode(p)));
+        value("event_active",p->Boolean.toString(KingdomsCombat.service.events.active()));
+        value("event_name",p->Ui.caps(KingdomsCombat.service.events.name()));
+        value("event_remaining",p->Long.toString((KingdomsCombat.service.events.remainingMillis()+999)/1000));
         value("at_war",p->Boolean.toString(KingdomsBridge.war(p,KingdomsCombat.service.now(),KingdomsCombat.service.config)));
         value("airdrop_nearby",p->Boolean.toString(KingdomsBridge.airDrop(p,KingdomsCombat.service.now(),KingdomsCombat.service.config)));
         Placeholders.registerServer(Identifier.parse("kingdomscombat:tag"),(context,arg)->context.hasServerPlayer()?PlaceholderResult.value(query(context.serverPlayer(),p->KingdomsCombat.service.component(p),net.minecraft.network.chat.Component.empty())):PlaceholderResult.value(""));
