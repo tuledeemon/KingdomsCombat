@@ -10,6 +10,7 @@ public final class CombatConfig {
     public boolean tagCreativePlayers=false, tagSpectators=false;
     public boolean killEndsCombat=true, killClearsAllOpponents=false;
     public boolean warRestrictions=true, airDropRestrictions=true, restrictWarTerritoryVisitors=false;
+    public boolean airDropBlockIncomingTeleports=true;
     public double airDropRadius=100, airDropVerticalTolerance=-1;
     public boolean horizontalAirDropRadius=true;
     public boolean resetOnEnderPearl=true, resetOnWindCharge=true, resetOnSpearLunge=true;

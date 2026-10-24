@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.2.0
+
+- Add host-configured event input chests with exact item/component/count requirements, up to nine required stacks, up to eight reward stacks, and an optional EconomyCraft wallet reward. Native chest and input-dialog menus need no client mod.
+- Make once-per-player and end-after-first-claim independent host options. Consume only required quantities, reject insufficient inputs/full reward inventories, and prevent reward-preview extraction or using unrelated items as private storage.
+- Save each deposit/withdrawal/claim with a verified vanilla player-save receipt and a durable recovery journal. Keep private inputs recoverable after closure, logout, cancellation or expiry; use Kingdoms' idempotent economy delivery for pending cash.
+- Block teleport arrivals from outside an incoming/capturable AirDrop area, including native server, direct connection and cross-dimension entry points. Resolve relative coordinates, use the existing radius/dimension rules, release the destination restriction after a win, and retain staff-mode bypass.
+- Add `airDropBlockIncomingTeleports` and update the host/player guides.
+
 ## 1.1.1
 
 - Fix the `state.json.tmp → state.json` missing-file crash: serialize save/read transactions and stage each write in its own unique file in the destination directory.

@@ -15,6 +15,7 @@
   "killClearsAllOpponents": false,
   "warRestrictions": true,
   "airDropRestrictions": true,
+  "airDropBlockIncomingTeleports": true,
   "restrictWarTerritoryVisitors": false,
   "airDropRadius": 100.0,
   "airDropVerticalTolerance": -1.0,

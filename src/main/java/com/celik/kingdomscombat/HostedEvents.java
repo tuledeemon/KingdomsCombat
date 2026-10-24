@@ -47,6 +47,7 @@ public final class HostedEvents {
     private final CombatService service;
     private final Path file;
     private final State state;
+    public final EventChests chests;
     private ServerBossEvent bar;
     private record Travel(UUID eventId,Destination location,long expiresAt){}
     private final Map<UUID,Travel> pending=new HashMap<>();
@@ -55,6 +56,7 @@ public final class HostedEvents {
         state=CombatStore.read(file,State.class,new State());
         validate(state);
         if(state.event!=null&&!active()){state.event=null;save();}
+        chests=new EventChests(service,file.resolveSibling("event-chests.json"));
     }
     public static void validate(State state){
         if(state==null||state.schemaVersion!=1)throw new IllegalStateException("Invalid hosted event state.");
@@ -74,6 +76,7 @@ public final class HostedEvents {
     }
     public void start(CommandSourceStack source,String name,String time){
         require(source);
+        chests.validateStart();
         name=name.trim();
         if(name.isBlank()||name.length()>64||name.codePoints().anyMatch(Character::isISOControl))throw new IllegalArgumentException("Use an event name of 1–64 characters.");
         int duration=HostedEventRules.seconds(time,service.config.eventMaxSeconds);
@@ -83,14 +86,16 @@ public final class HostedEvents {
         if(state.location==null&&source.getPlayer()!=null)state.location=Destination.at(source.getPlayer());
         event.location=state.location;
         event.description=state.description;
-        state.event=event;save();updateBar();announce(event,service.config.eventStartMessage,"Event started",service.config.tagSound);
+        chests.start(event.id);state.event=event;save();updateBar();announce(event,service.config.eventStartMessage,"Event started",service.config.tagSound);
     }
     public void stop(CommandSourceStack source){require(source);if(state.event==null)throw new IllegalArgumentException("No hosted event is active.");finish(true);}
     public void tick(){
+        chests.tick();
         pending.entrySet().removeIf(entry->{if(entry.getValue().expiresAt()>service.now())return false;var player=service.server.getPlayerList().getPlayer(entry.getKey());if(player!=null)player.sendSystemMessage(CombatService.text("Event teleport timed out. Try again.",service.config.errorColor));return true;});
         if(state.event==null)return;if(!active())finish(false);else updateBar();
     }
-    public void join(ServerPlayer player){if(active()){updateBar();if(player.connection!=null)bar.addPlayer(player);}}
+    public void join(ServerPlayer player){chests.join(player);if(active()){updateBar();if(player.connection!=null)bar.addPlayer(player);}}
+    void claimed(){if(state.event!=null)finish(false);}
     public void leave(ServerPlayer player){pending.remove(player.getUUID());if(bar!=null)bar.removePlayer(player);}
     public void hide(){pending.clear();if(bar!=null){bar.removeAllPlayers();bar=null;}}
     public void setLocation(CommandSourceStack source)throws com.mojang.brigadier.exceptions.CommandSyntaxException{
@@ -100,7 +105,8 @@ public final class HostedEvents {
     public void menu(ServerPlayer player){
         if(!active())throw new IllegalArgumentException("No hosted event is active.");
         var event=state.event;var color=service.config.eventColor;
-        List<net.minecraft.server.dialog.body.DialogBody> body=List.of(new PlainMessage(CombatService.text(event.description,"gray"),300),new PlainMessage(CombatService.text("Duration: "+Ui.clock(event.endsAt-event.startedAt)+" • Remaining: "+Ui.clock(remainingMillis()),color),300),new PlainMessage(CombatService.text("Host: "+event.host,color),300));
+        List<net.minecraft.server.dialog.body.DialogBody> body=new java.util.ArrayList<>(List.of(new PlainMessage(CombatService.text(event.description,"gray"),300),new PlainMessage(CombatService.text("Duration: "+Ui.clock(event.endsAt-event.startedAt)+" • Remaining: "+Ui.clock(remainingMillis()),color),300),new PlainMessage(CombatService.text("Host: "+event.host,color),300)));
+        String chestInfo=chests.information();if(!chestInfo.isEmpty())body.add(new PlainMessage(CombatService.text(chestInfo,color),300));
         var common=new CommonDialogData(CombatService.text(event.name,color),Optional.empty(),true,false,DialogAction.CLOSE,body,List.of());
         var teleport=new ActionButton(new CommonButtonData(CombatService.text("Teleport to event",color),160),Optional.of(new StaticAction(new net.minecraft.network.chat.ClickEvent.RunCommand("/event teleport "+event.id))));
         var close=new ActionButton(new CommonButtonData(CombatService.text("Close","gray"),100),Optional.empty());
@@ -147,7 +153,7 @@ public final class HostedEvents {
         for(var p:service.server.getPlayerList().getPlayers())if(p.connection!=null)bar.addPlayer(p);
     }
     private void finish(boolean cancelled){
-        var event=state.event;state.event=null;save();hide();
+        var event=state.event;state.event=null;try{save();}catch(RuntimeException error){state.event=event;throw error;}hide();
         announce(event,cancelled?service.config.eventStopMessage:service.config.eventEndMessage,cancelled?"Event stopped":"Event ended",service.config.endSound);
     }
     private void announce(Event event,String message,String title,String sound){

@@ -1,4 +1,13 @@
-# Release verification — 1.1.1
+# Release verification — 1.2.0
+
+**66 unit tests and 192 dedicated-server checks passed** on Minecraft 26.2 / Java 25 with Fabric Loader 0.19.5, Fabric API 0.160.0+26.2, Kingdoms 1.10.1, EconomyCraft 1.10.0, LuckPerms 5.5.85, HuskHomes 4.11-9ed80cc and C2ME 0.4.1-beta.1.0+26.2. No graphical client or production server was used.
+
+- Event chest checks exercise the host command templates, money aliases, setup menu, private native chest menus, rejecting unrelated/custom-component inputs, protected reward previews, exact consumption, item and actual wallet rewards, insufficient requirements/full inventories, once-per-player and repeat modes, simultaneous first-claim attempts, excess input withdrawal and post-event recovery.
+- Real vanilla player files and recovery journals prove deposits persist, saved receipts finish interrupted transactions and absent receipts discard unsaved changes. A blocked event-state destination verifies a committed first reward is not rolled back or repeated when ending fails, and ending retries successfully once storage recovers.
+- AirDrop checks exercise actual native and direct-connection teleports, relative coordinates, the inclusive radius boundary, active landing/capture phases, immediate release after a win, independent disabling, same-area destinations, dimension matching and rejecting cross-dimension arrival before loading destination chunks.
+- Existing combat, moderation, permission, HuskHomes, player receipt and save-failure checks pass. The server stops normally; production packaging excludes dependency and integration-test classes. Live visual appearance and untested third-party teleport implementations still need server validation.
+
+## Previous release — 1.1.1
 
 Built for Minecraft 26.2, Java 25, Fabric Loader 0.19.5 and Fabric API 0.160.0+26.2.
 

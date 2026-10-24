@@ -72,6 +72,7 @@ public final class CombatIntegration implements ModInitializer {
             time[0]+=5000;check(s.status(a).warMillis()==20000,"ongoing war continuously refreshes the lock");
             time[0]=war.endsAt-1000;s.status(a);time[0]=war.endsAt;check(s.status(a).warMillis()==19000,"war end leaves only the previously refreshed countdown");time[0]=war.endsAt+20000;check(s.allowTeleport(a,false),"war lock eventually expires");
             drops.drops.clear();var drop=new AirDropRules.Drop();drop.dimension="minecraft:overworld";drop.x=11000;drop.y=160;drop.z=12000;drop.createdAt=time[0];drop.landsAt=time[0]+600000;drop.expiresAt=time[0]+2400000;drops.drops.add(drop);
+            AirDropArrivalIntegration.run(s,a,drop,this::check);
             a.setPos(11100.5,900,12000.5);check(s.status(a).airDropMillis()==20000,"100-block incoming drop radius includes high-altitude players");a.setPos(11100.501,160,12000.5);time[0]+=5000;check(s.status(a).airDropMillis()==15000,"leaving the exact radius starts the countdown");
             a.setPos(11000.5,160,12000.5);drop.phase=AirDropRules.Phase.CAPTURABLE;check(s.status(a).airDropMillis()==20000,"landed contested drops still restrict teleports");
             drop.phase=AirDropRules.Phase.CLAIMED;time[0]+=1000;check(!KingdomsBridge.airDrop(a,time[0],cfg)&&s.status(a).airDropMillis()==19000,"any winning side stops refreshing the AirDrop restriction");time[0]+=20000;check(s.allowTeleport(a,false),"claimed drop no longer blocks commands once the tail expires");
@@ -130,6 +131,7 @@ public final class CombatIntegration implements ModInitializer {
             s.events.start(a.createCommandSourceStack(),"Stopped event","1m");server.getCommands().performPrefixedCommand(a.createCommandSourceStack(),"eventhost stop");check(!s.events.active()&&s.events.bossBar()==null,"event hosts can stop the active event through the command");
             b.setPos(origin);server.getCommands().performPrefixedCommand(b.createCommandSourceStack(),"event teleport "+eventFile.event.id);check(b.position().equals(origin),"stale event dialog cannot teleport after the event stops");
             s.config.eventTitles=false;s.config.eventChat=false;s.config.eventSounds=false;s.config.sounds=false;
+            EventChestIntegration.run(s,a,b,c,this::check);
 
             s.ledger.clear(a.getUUID());s.ledger.manual(a.getUUID(),time[0],20);s.stopping=true;s.disconnect(a);check(a.isAlive()&&s.ledger.data.logoutPenalties.isEmpty(),"normal server shutdown does not kill combat-tagged players");s.stopping=false;
             a.setItemInHand(InteractionHand.MAIN_HAND,ItemStack.EMPTY);a.getInventory().setItem(9,new ItemStack(Items.DIAMOND,3));s.ledger.manual(a.getUUID(),time[0],20);

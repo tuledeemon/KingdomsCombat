@@ -17,4 +17,9 @@ public final class KingdomsBridge {
             if(d.active()&&now<d.expiresAt&&TagLedger.near(KingdomService.dimension(player.level()),player.getX(),player.getY(),player.getZ(),d.dimension,d.x+.5,d.y,d.z+.5,c))return true;
         return false;
     }
+    public static boolean enteringAirDrop(ServerPlayer player,net.minecraft.server.level.ServerLevel destination,double x,double y,double z,long now,CombatConfig c){
+        var k=KingdomsMod.service;if(k==null||!c.airDropRestrictions||!c.airDropBlockIncomingTeleports)return false;
+        for(var d:((AirDropsAccessor)(Object)k.airDrops).combat$data().drops)if(d.active()&&now<d.expiresAt&&TagLedger.near(KingdomService.dimension(destination),x,y,z,d.dimension,d.x+.5,d.y,d.z+.5,c)&&!TagLedger.near(KingdomService.dimension(player.level()),player.getX(),player.getY(),player.getZ(),d.dimension,d.x+.5,d.y,d.z+.5,c))return true;
+        return false;
+    }
 }

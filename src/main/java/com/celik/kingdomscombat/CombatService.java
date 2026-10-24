@@ -151,6 +151,14 @@ public final class CombatService {
         if(!config.enabled||bypass(p))return true;
         boolean blocked=!healthy||status(p).active();if(blocked&&notify)denied(p);return !blocked;
     }
+    public boolean allowDestination(ServerPlayer player,net.minecraft.server.level.ServerLevel level,double x,double y,double z,Set<net.minecraft.world.entity.Relative> relative){
+        if(!config.enabled||stopping||staff.internalMove()||bypass(player))return true;
+        if(relative.contains(net.minecraft.world.entity.Relative.X))x+=player.getX();
+        if(relative.contains(net.minecraft.world.entity.Relative.Y))y+=player.getY();
+        if(relative.contains(net.minecraft.world.entity.Relative.Z))z+=player.getZ();
+        if(!KingdomsBridge.enteringAirDrop(player,level,x,y,z,now(),config))return true;
+        long now=now();if(now-lastDenial.getOrDefault(player.getUUID(),0L)>=1000){lastDenial.put(player.getUUID(),now);player.sendSystemMessage(text("You cannot teleport into an incoming or unclaimed AirDrop area. Travel there normally.",config.errorColor));}return false;
+    }
     public boolean command(ParseResults<CommandSourceStack> parsed,String raw){
         ServerPlayer actor=parsed.getContext().getSource().getPlayer();
         if(actor!=null&&staff.muted(actor.getUUID())&&matchesCommand(parsed,raw,config.mutedCommands)){actor.sendSystemMessage(text("You are muted.","red"));return false;}

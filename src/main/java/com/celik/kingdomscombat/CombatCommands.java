@@ -14,7 +14,7 @@ public final class CombatCommands {
     private static CombatService s(){return Objects.requireNonNull(KingdomsCombat.service,"Combat service is not ready.");}
     public static void register(CommandDispatcher<CommandSourceStack> d){
         d.register(literal("combat").executes(c->run(c,()->CombatMenu.status(c.getSource().getPlayerOrException()))));
-        d.register(literal("event").executes(c->run(c,()->s().events.menu(c.getSource().getPlayerOrException()))).then(literal("teleport").then(argument("event",StringArgumentType.word()).executes(c->run(c,()->s().events.travel(c.getSource().getPlayerOrException(),UUID.fromString(StringArgumentType.getString(c,"event"))))))));
+        d.register(literal("event").executes(c->run(c,()->s().events.menu(c.getSource().getPlayerOrException()))).then(literal("chest").executes(c->run(c,()->s().events.chests.open(c.getSource().getPlayerOrException())))).then(literal("teleport").then(argument("event",StringArgumentType.word()).executes(c->run(c,()->s().events.travel(c.getSource().getPlayerOrException(),UUID.fromString(StringArgumentType.getString(c,"event"))))))));
         d.register(literal("staffmode").requires(source->source.getPlayer()!=null&&(s().staffMode(source.getPlayer())||s().permissions.authorize(source.getPlayer()))).executes(c->run(c,()->reply(c,s().toggleStaffMode(c.getSource().getPlayerOrException())?"Staff mode enabled. Use /staff for moderation tools.":"Staff mode disabled. Default-group permissions apply."))));
         StaffCommands.register(d);
         var root=literal("combatadmin").requires(source->CombatService.allowed(source,KingdomsCombat.service==null?"kingdomscombat.admin":s().config.adminPermission,KingdomsCombat.service==null?2:s().config.adminLevel)).executes(c->run(c,()->CombatMenu.admin(c.getSource().getPlayerOrException())));
@@ -31,6 +31,14 @@ public final class CombatCommands {
         event.then(literal("stop").executes(c->run(c,()->s().events.stop(c.getSource()))));
         event.then(literal("setlocation").executes(c->run(c,()->{s().events.setLocation(c.getSource());reply(c,"Event location set to your position.");})));
         event.then(literal("description").then(argument("text",StringArgumentType.greedyString()).executes(c->run(c,()->{s().events.setDescription(c.getSource(),StringArgumentType.getString(c,"text"));reply(c,"Event description saved.");}))));
+        var chest=literal("chest").executes(c->run(c,()->{if(c.getSource().getPlayer()!=null)s().events.chests.settings(c.getSource().getPlayer());else reply(c,s().events.chests.status());}));
+        chest.then(literal("set").executes(c->run(c,()->{s().events.chests.setChest(c.getSource());reply(c,"Event input chest selected.");})));
+        chest.then(literal("required").executes(c->run(c,()->{s().events.chests.add(c.getSource(),false);reply(c,"Held stack added to requirements; the template item is not consumed.");})));
+        chest.then(literal("reward").executes(c->run(c,()->{s().events.chests.add(c.getSource(),true);reply(c,"Held stack added to rewards; the template item is not consumed.");})));
+        chest.then(literal("money").then(argument("amount",StringArgumentType.word()).executes(c->run(c,()->{s().events.chests.setting(c.getSource(),"money",StringArgumentType.getString(c,"amount"));reply(c,"Money reward saved.");}))));
+        for(String key:List.of("endafterclaim","onceperplayer"))chest.then(literal(key).then(argument("enabled",BoolArgumentType.bool()).executes(c->run(c,()->{s().events.chests.setting(c.getSource(),key,Boolean.toString(BoolArgumentType.getBool(c,"enabled")));reply(c,"Chest claim rule saved.");}))));
+        for(String key:List.of("clearrequired","clearrewards","disable"))chest.then(literal(key).executes(c->run(c,()->{s().events.chests.setting(c.getSource(),key,"");reply(c,"Chest setup updated.");})));
+        event.then(chest);
         event.then(argument("name",StringArgumentType.string()).then(argument("time",StringArgumentType.word()).executes(c->run(c,()->s().events.start(c.getSource(),StringArgumentType.getString(c,"name"),StringArgumentType.getString(c,"time"))))));
         d.register(event);
     }
