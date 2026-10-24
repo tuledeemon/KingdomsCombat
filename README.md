@@ -4,7 +4,7 @@ A separate **server-only Fabric 26.2 addon** for [Kingdoms](https://github.com/t
 
 **No client mod or resource pack is needed.** Custom menus, messages, titles and the countdown use Kingdoms' small-caps style.
 
-**1.0.2:** LuckPerms-aware `/staffmode` and `/eventhost`. Staff mode clears all timers and bypasses combat, war and AirDrop restrictions, including teleport locks. Event hosts set a location and description, then announce timed events with a global boss bar, titles and sounds. `/event` opens the details and a teleport button that respects combat, war and AirDrop restrictions.
+**1.1.0:** `/staffmode` now controls staff permissions as well as the combat exemption. While off, recognized staff receive only the LuckPerms default group's permissions, including OP restriction. While on, their original permissions return and `/staff` opens freeze, warning, mute, kick, ban and notes tools. Staff chat uses `/sc`. Timed hosted events and `/event` remain available.
 
 ## Default rules
 
@@ -25,8 +25,9 @@ Put the [release JAR](https://github.com/tuledeemon/KingdomsCombat/releases) in 
 - Minecraft **26.2**, Java **25**, Fabric Loader **0.19.5+** and Fabric API for 26.2.
 - **Kingdoms 1.7.1+** and its existing dependencies.
 - Text Placeholder API **3.1.0-beta.1+26.2** (already required by Kingdoms).
+- **LuckPerms Fabric 5.5.85+** for 26.2, installed separately; required for staff permission isolation.
 
-HuskHomes is optional. Its Fabric 26.2 build **4.11-9ed80cc** is the compatibility target. Kingdoms, HuskHomes and Placeholder API are installed separately; they are not bundled into this addon.
+HuskHomes is optional. Its Fabric 26.2 build **4.11-9ed80cc** is the compatibility target. Kingdoms, LuckPerms, HuskHomes and Placeholder API are installed separately; they are not bundled into this addon.
 
 Use **`/combat`** for player status and **`/combatadmin`** for the admin menu. Text settings open Minecraft dialogs. Configuration is generated at `config/kingdoms-combat/config.json`; persistent tags and logout penalties live at `<world>/kingdoms-combat/state.json`.
 

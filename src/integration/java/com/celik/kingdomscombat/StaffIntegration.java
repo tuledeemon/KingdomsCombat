@@ -1,0 +1,148 @@
+package com.celik.kingdomscombat;
+
+import net.luckperms.api.LuckPermsProvider;
+import net.luckperms.api.node.Node;
+import net.luckperms.api.query.QueryOptions;
+import net.luckperms.api.context.ImmutableContextSet;
+import net.luckperms.api.util.Tristate;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.permissions.*;
+import net.minecraft.server.players.NameAndId;
+import net.minecraft.network.protocol.game.*;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.inventory.ContainerInput;
+import net.minecraft.world.item.*;
+import net.minecraft.world.level.GameType;
+import java.util.*;
+import java.util.concurrent.TimeUnit;
+import java.util.function.BiConsumer;
+import static net.minecraft.commands.Commands.*;
+
+/** Exercises the actual LuckPerms provider and native server entry points. */
+final class StaffIntegration {
+    static void run(MinecraftServer server,CombatService s,long[] time,BiConsumer<Boolean,String> check)throws Exception{
+        var lp=LuckPermsProvider.get();
+        var group=lp.getGroupManager().getGroup("default");
+        var originalNodes=List.copyOf(group.data().toCollection());
+        var cfg=s.config;cfg.staffDefaultPermissionsWhenOff=true;
+        var level=server.overworld();
+        var staff=CombatIntegration.player(server,level,"ModStaff",11000,160,12000);
+        var target=CombatIntegration.player(server,level,"ModTarget",11002,160,12000);
+        var donor=CombatIntegration.player(server,level,"ModDonor",11004,160,12000);
+        var user=lp.getUserManager().loadUser(staff.getUUID(),staff.getGameProfile().name()).get(10,TimeUnit.SECONDS);
+        var recipient=lp.getUserManager().loadUser(target.getUUID(),target.getGameProfile().name()).get(10,TimeUnit.SECONDS);
+        var donorUser=lp.getUserManager().loadUser(donor.getUUID(),donor.getGameProfile().name()).get(10,TimeUnit.SECONDS);
+        ((me.lucko.luckperms.fabric.model.MixinUser)staff).luckperms$initializePermissions(me.lucko.luckperms.common.api.implementation.ApiUser.cast(user));
+        ((me.lucko.luckperms.fabric.model.MixinUser)target).luckperms$initializePermissions(me.lucko.luckperms.common.api.implementation.ApiUser.cast(recipient));
+        ((me.lucko.luckperms.fabric.model.MixinUser)donor).luckperms$initializePermissions(me.lucko.luckperms.common.api.implementation.ApiUser.cast(donorUser));
+        try{
+            group.data().add(Node.builder("fixture.default").value(true).build());
+            group.data().add(Node.builder("fixture.staff").value(false).build());
+            group.data().add(Node.builder("fixture.context").withContext("world","fixture_world").value(true).build());
+            group.getCachedData().invalidate();
+            user.data().add(Node.builder(cfg.staffModePermission).value(true).build());
+            user.data().add(Node.builder("fixture.staff").value(true).build());
+            user.data().add(Node.builder("fixture.personal").value(true).build());
+            user.data().add(Node.builder("fixture.wild.*").value(true).build());
+            donorUser.data().add(Node.builder("fixture.donor").value(true).build());
+            user.getCachedData().invalidate();donorUser.getCachedData().invalidate();
+            var savedUserNodes=Set.copyOf(user.data().toCollection());
+            s.permissions.join(staff);s.permissions.join(target);s.permissions.join(donor);
+            s.staff.join(staff);s.staff.join(target);s.staff.join(donor);
+            var data=user.getCachedData().getPermissionData(QueryOptions.nonContextual());
+            check.accept(data.checkPermission("fixture.default")==Tristate.TRUE,"staff OFF inherits actual default-group grants");
+            check.accept(data.queryPermission("fixture.staff").result()==Tristate.FALSE,"staff OFF uses default-group denial instead of own grant");
+            check.accept(data.checkPermission("fixture.personal")==Tristate.UNDEFINED&&data.checkPermission("fixture.wild.anything")==Tristate.UNDEFINED,"staff OFF strips personal and wildcard permissions");
+            check.accept(!data.getPermissionMap().containsKey("fixture.personal"),"permission-map consumers cannot read suppressed staff grants");
+            check.accept(donorUser.getCachedData().getPermissionData().checkPermission("fixture.donor")==Tristate.TRUE,"ordinary non-staff rank permissions remain effective");
+            var contextData=user.getCachedData().getPermissionData(QueryOptions.contextual(ImmutableContextSet.of("world","fixture_world")));
+            check.accept(contextData.checkPermission("fixture.context")==Tristate.TRUE&&user.getCachedData().getPermissionData(QueryOptions.contextual(ImmutableContextSet.of("world","other"))).checkPermission("fixture.context")==Tristate.UNDEFINED,"default-group contextual permissions retain world isolation");
+            check.accept(s.permissions.authorize(staff),"raw staffmode authorization works while normal staff permissions are suppressed");
+            var source=staff.createCommandSourceStack();
+            server.getPlayerList().op(staff.nameAndId(),Optional.of(LevelBasedPermissionSet.OWNER),Optional.empty());
+            var elevated=source.withPermission(LevelBasedPermissionSet.OWNER);
+            check.accept(!staff.permissions().hasPermission(Permissions.COMMANDS_OWNER)&&!elevated.permissions().hasPermission(Permissions.COMMANDS_OWNER),"OP level and elevated player command sources cannot bypass staff OFF");
+            group.data().add(Node.builder("minecraft.fixture.allowed").value(true).build());group.getCachedData().invalidate();
+            check.accept(source.permissions().hasPermission(new Permission.Atom(net.minecraft.resources.Identifier.parse("minecraft:fixture/allowed"))),"native named permissions explicitly granted to default group remain usable");
+            var dispatcher=server.getCommands().getDispatcher();
+            server.getCommands().performPrefixedCommand(source,"staff warn "+target.getGameProfile().name()+" blocked");
+            check.accept(s.staff.notes(target.getUUID()).isEmpty(),"staff OFF cannot execute moderation commands");
+            server.getCommands().performPrefixedCommand(source,"staffmode");
+            check.accept(s.staffMode(staff)&&data.checkPermission("fixture.personal")==Tristate.TRUE&&data.checkPermission("fixture.wild.anything")==Tristate.TRUE,"staffmode ON restores original permissions without replacing cached user objects");
+            check.accept(staff.permissions().hasPermission(Permissions.COMMANDS_OWNER),"staffmode ON restores OP permission level");
+            server.getCommands().performPrefixedCommand(source,"staff");
+            check.accept(staff.containerMenu instanceof StaffMenu.Menu,"staff root opens protected native moderation menu");
+            var menu=staff.containerMenu;var before=menu.getSlot(4).getItem().copy();
+            menu.clicked(4,0,ContainerInput.QUICK_MOVE,staff);menu.clicked(4,0,ContainerInput.PICKUP,staff);
+            check.accept(menu.getCarried().isEmpty()&&ItemStack.matches(before,menu.getSlot(4).getItem()),"menu icons cannot be taken or shift-clicked");
+            var removed=List.of("vanish","teleport","bring","back","inspect","enderchest");
+            check.accept(removed.stream().allMatch(k->dispatcher.getRoot().getChild("staff").getChild(k)==null),"removed tools have no command registrations");
+            StaffMenu.player(staff,target.getUUID());
+            staff.containerMenu.clicked(22,0,ContainerInput.PICKUP,staff);
+            check.accept(CombatIntegration.packets(staff).stream().anyMatch(p->p.getClass().getSimpleName().equals("ClientboundShowDialogPacket")),"warning action opens native reason input dialog");
+            server.getCommands().performPrefixedCommand(source,"staff warn "+target.getGameProfile().name()+" Test warning");
+            check.accept(s.staff.notes(target.getUUID()).stream().anyMatch(n->n.action.equals("warn")&&n.reason.equals("Test warning")),"warning persists with a reason and actor");
+            user.data().add(Node.builder(cfg.staffToolPermissionPrefix+"ban").value(false).build());user.getCachedData().invalidate();
+            boolean denied=false;try{s.staff.ban(source,target.getUUID(),60,"Denied ban");}catch(IllegalArgumentException expected){denied=true;}
+            check.accept(denied&&!server.getPlayerList().getBans().isBanned(target.nameAndId()),"explicit per-tool denial prevents a ban even for OP staff");
+            user.data().remove(Node.builder(cfg.staffToolPermissionPrefix+"ban").value(false).build());user.getCachedData().invalidate();
+            s.staff.freeze(source,target.getUUID(),true);
+            var origin=target.position();
+            target.connection.handleMovePlayer(new ServerboundMovePlayerPacket.Pos(origin.x+10,origin.y,origin.z,false,false));
+            check.accept(target.position().equals(origin)&&!s.allowTeleport(target,false),"frozen movement packets and addon teleport entry points are blocked");
+            check.accept(!target.teleportTo(level,origin.x+5,origin.y,origin.z,Set.of(),0,0,false),"frozen players cannot bypass review with native server teleport");
+            float health=target.getHealth();target.invulnerableTime=0;target.hurtServer(level,staff.damageSources().playerAttack(staff),4);
+            check.accept(target.getHealth()==health,"frozen targets are protected from damage during review");
+            target.setItemInHand(InteractionHand.MAIN_HAND,new ItemStack(Items.ENDER_PEARL));int count=target.getMainHandItem().getCount();
+            var use=net.fabricmc.fabric.api.event.player.UseItemCallback.EVENT.invoker().interact(target,level,InteractionHand.MAIN_HAND);
+            check.accept(use==net.minecraft.world.InteractionResult.FAIL&&target.getMainHandItem().getCount()==count,"frozen item-use callback denies escape items");
+            check.accept(new StaffService(s).frozen(target.getUUID()),"frozen status reloads from persistent state");
+            s.ledger.manual(target.getUUID(),time[0],20);s.disconnect(target);
+            check.accept(target.isAlive()&&!s.ledger.data.logoutPenalties.containsKey(target.getUUID()),"staff review logout records the departure without a combat death");
+            s.join(target);check.accept(s.staff.frozen(target.getUUID()),"reconnecting does not clear a staff review");
+            s.staff.freeze(source,target.getUUID(),false);
+            check.accept(!s.staff.frozen(target.getUUID()),"unfreeze restores normal actions");
+            var chat=dispatcher.register(literal("fixturechat").executes(c->1));dispatcher.register(literal("fixturechatalias").redirect(chat));cfg.mutedCommands.add("fixturechat");
+            s.staff.mute(source,target.getUUID(),60,"Test mute");
+            check.accept(s.staff.muted(target.getUUID())&&new StaffService(s).muted(target.getUUID()),"temporary mute persists across reloads");
+            for(String command:List.of("fixturechat","fixturechatalias","minecraft:msg ModDonor hi"))check.accept(!s.command(dispatcher.parse(command,target.createCommandSourceStack()),command),"mute blocks namespaced or redirected chat command: "+command);
+            check.accept(!net.fabricmc.fabric.api.message.v1.ServerMessageEvents.ALLOW_CHAT_MESSAGE.invoker().allowChatMessage(net.minecraft.network.chat.PlayerChatMessage.unsigned(target.getUUID(),"Muted test message"),target,net.minecraft.network.chat.ChatType.bind(net.minecraft.network.chat.ChatType.CHAT,target)),"mute denies normal chat through the signed-chat-safe event");
+            time[0]+=61000;check.accept(!s.staff.muted(target.getUUID()),"temporary mute expires against persisted real-time deadline");
+            s.staff.mute(source,target.getUUID(),-1,"Permanent mute");s.staff.unmute(source,target.getUUID());
+            check.accept(!s.staff.muted(target.getUUID()),"permanent mute supports manual reversal");
+            s.staff.note(source,target.getUUID(),"Reviewed; no action needed");
+            check.accept(s.staff.notes(target.getUUID()).stream().anyMatch(n->n.action.equals("note")),"staff notes are retained with moderation history");
+            s.staff.ban(source,target.getUUID(),60,"Test temporary ban");
+            var ban=server.getPlayerList().getBans().get(target.nameAndId());
+            check.accept(ban!=null&&ban.getExpires()!=null&&ban.getReason().equals("Test temporary ban"),"temporary ban uses native persisted ban list with reason and expiry");
+            s.staff.unban(source,target.getUUID());check.accept(!server.getPlayerList().getBans().isBanned(target.nameAndId()),"unban removes native ban entry");
+            recipient.data().add(Node.builder(cfg.staffToolPermissionPrefix+"immune").value(true).build());recipient.getCachedData().invalidate();
+            denied=false;try{s.staff.warn(source,target.getUUID(),"Blocked warning");}catch(IllegalArgumentException expected){denied=true;}
+            check.accept(denied,"explicit moderation immunity protects target");
+            recipient.data().remove(Node.builder(cfg.staffToolPermissionPrefix+"immune").value(true).build());recipient.getCachedData().invalidate();
+            var packets=CombatIntegration.packets(target);packets.clear();s.staff.staffChat(staff,"Private staff message");
+            check.accept(packets.stream().noneMatch(p->p instanceof ClientboundSystemChatPacket message&&message.content().getString().contains(com.celik.kingdoms.Ui.caps("Private staff message"))),"staff chat is not sent to ordinary players");
+            StaffMenu.home(staff,0);var stale=staff.containerMenu;
+            staff.setGameMode(GameType.CREATIVE);s.toggleStaffMode(staff);
+            check.accept(!s.staffMode(staff)&&!stale.stillValid(staff)&&staff.gameMode()==GameType.SURVIVAL&&!staff.getAbilities().mayfly,"leaving staffmode closes menu and removes creative flight");
+            check.accept(data.checkPermission("fixture.personal")==Tristate.UNDEFINED&&!elevated.permissions().hasPermission(Permissions.COMMANDS_OWNER),"staff OFF suppression applies again to cached permission and source objects");
+            var notesBefore=s.staff.notes(target.getUUID()).size();
+            server.getCommands().performPrefixedCommand(source,"staff note "+target.getUUID()+" stale dialog");
+            check.accept(s.staff.notes(target.getUUID()).size()==notesBefore,"stale dialog commands cannot moderate after staffmode OFF");
+            check.accept(Set.copyOf(user.data().toCollection()).equals(savedUserNodes),"staff toggles leave assigned LuckPerms nodes unchanged");
+            s.toggleStaffMode(staff);s.disconnect(staff);s.join(staff);
+            check.accept(!s.staffMode(staff)&&data.checkPermission("fixture.personal")==Tristate.UNDEFINED,"reconnect defaults to staff OFF and suppresses staff permissions");
+            s.toggleStaffMode(staff);user.data().add(Node.builder(cfg.staffModePermission).value(false).build());user.getCachedData().invalidate();
+            check.accept(!s.staffMode(staff)&&data.checkPermission("fixture.personal")==Tristate.UNDEFINED,"revoking staffmode fails closed immediately for permissions and exemption");
+            for(int i=0;i<20;i++)s.staff.tick();check.accept(!s.staffFlag(staff.getUUID()),"revoked staff session is cleaned up by tick");
+            check.accept(java.nio.file.Files.readString(s.stateFile.resolveSibling("staff-audit.jsonl")).contains("frozen logout"),"freeze logout and moderation actions are written to append-only audit log");
+        }finally{
+            group.data().clear();originalNodes.forEach(n->group.data().add(n));group.getCachedData().invalidate();
+            s.staff.state.frozen.remove(target.getUUID());s.staff.state.mutes.remove(target.getUUID());s.staff.save();
+            server.getPlayerList().deop(new NameAndId(staff.getUUID(),staff.getGameProfile().name()));
+            for(var p:List.of(staff,target,donor)){s.permissions.leave(p);CombatIntegration.remove(server,p);}
+            cfg.staffDefaultPermissionsWhenOff=false;cfg.mutedCommands.remove("fixturechat");
+        }
+    }
+}

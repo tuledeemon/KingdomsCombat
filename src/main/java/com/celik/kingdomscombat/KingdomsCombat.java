@@ -29,6 +29,11 @@ public final class KingdomsCombat implements ModInitializer {
         ServerPlayConnectionEvents.JOIN.register((handler,sender,server)->{if(service!=null)service.join(handler.player);});
         ServerPlayerEvents.COPY_FROM.register((oldPlayer,newPlayer,alive)->((PenaltyReceipt)newPlayer).combat$penaltyReceipt(((PenaltyReceipt)oldPlayer).combat$penaltyReceipt()));
         CommandRegistrationCallback.EVENT.register((dispatcher,access,environment)->CombatCommands.register(dispatcher));
+        net.fabricmc.fabric.api.message.v1.ServerMessageEvents.ALLOW_CHAT_MESSAGE.register((message,sender,parameters)->{if(service!=null&&service.staff.muted(sender.getUUID())){sender.sendSystemMessage(CombatService.text("You are muted.","red"));return false;}return true;});
+        net.fabricmc.fabric.api.event.player.PlayerBlockBreakEvents.BEFORE.register((world,player,pos,state,entity)->!(player instanceof ServerPlayer p&&service!=null&&service.staff.frozen(p.getUUID())));
+        net.fabricmc.fabric.api.event.player.UseItemCallback.EVENT.register((player,world,hand)->player instanceof ServerPlayer p&&service!=null&&service.staff.frozen(p.getUUID())?net.minecraft.world.InteractionResult.FAIL:net.minecraft.world.InteractionResult.PASS);
+        net.fabricmc.fabric.api.event.player.UseBlockCallback.EVENT.register((player,world,hand,hit)->player instanceof ServerPlayer p&&service!=null&&service.staff.frozen(p.getUUID())?net.minecraft.world.InteractionResult.FAIL:net.minecraft.world.InteractionResult.PASS);
+        net.fabricmc.fabric.api.entity.event.v1.ServerLivingEntityEvents.ALLOW_DAMAGE.register((entity,source,amount)->service==null||!(entity instanceof ServerPlayer victim&&service.staff.frozen(victim.getUUID()))&&!(source.getEntity() instanceof ServerPlayer attacker&&service.staff.frozen(attacker.getUUID())));
         CombatPlaceholders.register();
         if(FabricLoader.getInstance().isModLoaded("huskhomes"))HuskHomesHook.register();
         LOG.info("Kingdoms Combat: server-only Fabric 26.2; optional HuskHomes guard {}",FabricLoader.getInstance().isModLoaded("huskhomes"));

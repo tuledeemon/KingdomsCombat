@@ -24,6 +24,8 @@ public final class CombatPlaceholders {
         value("can_teleport",p->Boolean.toString(KingdomsCombat.service.allowTeleport(p,false)));
         value("logout_punished",p->Boolean.toString(KingdomsCombat.service.logoutPunished(p)));
         value("staffmode",p->Boolean.toString(KingdomsCombat.service.staffMode(p)));
+        value("frozen",p->Boolean.toString(KingdomsCombat.service.staff.frozen(p.getUUID())));
+        value("muted",p->Boolean.toString(KingdomsCombat.service.staff.muted(p.getUUID())));
         value("event_active",p->Boolean.toString(KingdomsCombat.service.events.active()));
         value("event_name",p->Ui.caps(KingdomsCombat.service.events.name()));
         value("event_remaining",p->Long.toString((KingdomsCombat.service.events.remainingMillis()+999)/1000));

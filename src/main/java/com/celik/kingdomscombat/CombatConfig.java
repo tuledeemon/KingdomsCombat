@@ -29,6 +29,9 @@ public final class CombatConfig {
     public float soundVolume=.6f;
     public int adminLevel=2;
     public String staffModePermission="kingdomscombat.staffmode",eventHostPermission="kingdomscombat.eventhost",adminPermission="kingdomscombat.admin";
+    public boolean staffDefaultPermissionsWhenOff=true,staffActionBar=true;
+    public String staffDefaultGroup="default",staffToolPermissionPrefix="kingdomscombat.staff.";
+    public int staffReasonMaxLength=512,staffNotesLimit=100,staffTeleportTimeoutSeconds=15;
     public int eventMaxSeconds=86400;
     public int eventTeleportTimeoutSeconds=15;
     public int eventDescriptionMaxLength=2048;
@@ -39,7 +42,12 @@ public final class CombatConfig {
     public String bypassPermission="kingdomscombat.bypass";
     public boolean respectBypassPermission=true, huskHomesTeleportGuard=true;
     public List<String> blockedCommands=new ArrayList<>(List.of("home","phome","publichome","warp","spawn","tp","teleport","tpo","tphere","tpoffline","tpall","tpa","tpahere","tpaall","tpaccept","tpyes","rtp","back","hub","lobby","server"));
+    public List<String> mutedCommands=new ArrayList<>(List.of("me","say","tell","msg","w","teammsg","tm","whisper","message","reply","r"));
     public void validate(){
+        if(mutedCommands==null||mutedCommands.size()>512||mutedCommands.stream().anyMatch(s->s==null||s.isBlank()||s.length()>256))throw new IllegalArgumentException("Invalid muted command list.");
+        if(staffToolPermissionPrefix==null||!staffToolPermissionPrefix.matches("[a-z0-9_.-]{1,100}\\."))throw new IllegalArgumentException("Invalid staff tool permission prefix.");
+        if(staffDefaultGroup==null||!staffDefaultGroup.matches("[a-z0-9_-]{1,64}"))throw new IllegalArgumentException("Invalid staff default group.");
+        if(staffReasonMaxLength<1||staffReasonMaxLength>2048||staffNotesLimit<1||staffNotesLimit>1000||staffTeleportTimeoutSeconds<1||staffTeleportTimeoutSeconds>120)throw new IllegalArgumentException("Invalid moderation limits.");
         if(durationSeconds<1||durationSeconds>86400||warLockSeconds<1||warLockSeconds>86400||airDropLockSeconds<1||airDropLockSeconds>86400)throw new IllegalArgumentException("Tag durations must be 1–86400 seconds.");
         if(pollTicks<1||pollTicks>20||actionBarIntervalTicks<1||actionBarIntervalTicks>100||saveIntervalSeconds<1||saveIntervalSeconds>300)throw new IllegalArgumentException("Invalid update/save interval.");
         if(!Double.isFinite(airDropRadius)||airDropRadius<1||airDropRadius>10000||!Double.isFinite(airDropVerticalTolerance)||airDropVerticalTolerance< -1||airDropVerticalTolerance>10000)throw new IllegalArgumentException("Invalid AirDrop radius/height tolerance.");

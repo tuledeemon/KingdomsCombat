@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.1.0
+
+- Restrict recognized staff to the configured LuckPerms default group's permissions while staffmode is off; preserve their assigned groups and nodes, including contextual inheritance. Suppress native OP fallback while off and retain separate authorization for `/staffmode`.
+- Add the staffmode-only `/staff` menu with freeze/unfreeze, warning, timed/permanent mute and ban, kick, notes, history and private staff chat (`/sc`). Input uses native Minecraft dialogs.
+- Persist reviews and mutes across reconnects/restarts; use native ban storage. Record moderation actions and frozen logouts in an append-only audit log.
+- Freeze movement, combat, item use, inventory actions and teleporting during review. Close moderation menus and reset creative/spectator flight when leaving staff mode.
+- Add per-tool permissions, moderation immunity, configuration limits and `%kingdomscombat:frozen%` / `%kingdomscombat:muted%` placeholders.
+- Require separately installed LuckPerms Fabric 5.5.85+ for 26.2. No vanish, teleport, bring or inventory-inspection tools are added.
+
 ## 1.0.2
 
 - Staff mode now bypasses all combat, war and AirDrop restrictions and clears existing timers, including their cooldown tails.

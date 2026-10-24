@@ -7,6 +7,7 @@ Use Java **25** and the included Gradle **9.4.1** wrapper. Minecraft and Fabric 
 Create `libs/` with these separately distributed dependencies:
 
 - `kingdoms-1.7.1-mc26.2.jar`
+- `LuckPerms-Fabric-5.5.85.jar` for 26.2; required at runtime and never bundled.
 - `placeholder-api-3.1.0-beta.1+26.2.jar`
 - EconomyCraft 1.10.0 for 26.2 and Architectury 21.1.9 for the development server.
 - `huskhomes-fabric-26.2.jar`, using the official Fabric 26.2 build `4.11-9ed80cc`.
@@ -18,7 +19,7 @@ HuskHomes embeds its common API and support libraries. For compilation, extract 
 ./gradlew runIntegration
 ```
 
-Windows uses `gradlew.bat`. Set `JAVA_TOOL_OPTIONS=-Djdk.net.unixdomain.tmpdir=C:\Temp` and create `C:\Temp` before running Gradle. Keep Unicode project paths intact and quote them. A real ASCII temporary cache can be used when Java cannot read worker classpaths through a redirected cache.
+Windows uses `gradlew.bat`. Set `JAVA_TOOL_OPTIONS=-Djdk.net.unixdomain.tmpdir=C:\Temp` and create `C:\Temp` before running Gradle. Keep Unicode project paths intact and quote them. If Java cannot read test worker classpaths containing Unicode, copy the project into an ASCII temporary build directory and copy verified artifacts back. Keep the real workspace and account paths unchanged.
 
 ## Integration profiles
 

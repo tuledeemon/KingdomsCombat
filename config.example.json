@@ -90,5 +90,25 @@
     "hub",
     "lobby",
     "server"
+  ],
+  "staffDefaultPermissionsWhenOff": true,
+  "staffActionBar": true,
+  "staffDefaultGroup": "default",
+  "staffToolPermissionPrefix": "kingdomscombat.staff.",
+  "staffReasonMaxLength": 512,
+  "staffNotesLimit": 100,
+  "staffTeleportTimeoutSeconds": 15,
+  "mutedCommands": [
+    "me",
+    "say",
+    "tell",
+    "msg",
+    "w",
+    "teammsg",
+    "tm",
+    "whisper",
+    "message",
+    "reply",
+    "r"
   ]
 }
