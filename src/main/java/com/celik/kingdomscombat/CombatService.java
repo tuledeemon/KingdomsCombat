@@ -35,13 +35,15 @@ public final class CombatService {
     private final Map<UUID,Long> lastDenial=new HashMap<>();
     private final Set<UUID> staffModes=java.util.concurrent.ConcurrentHashMap.newKeySet();
     private int ticks;
-    private long lastSave;
+    private long lastSaveAttempt,lastSaveError;
+    private boolean saveFailureReported;
     public boolean stopping,healthy=true;
     private boolean dirty;
     public CombatService(MinecraftServer server,CombatConfig config,Path configFile,Path stateFile){this(server,config,configFile,stateFile,System::currentTimeMillis);}
     CombatService(MinecraftServer server,CombatConfig config,Path configFile,Path stateFile,LongSupplier clock){
         this.server=server;this.config=config;this.configFile=configFile;this.stateFile=stateFile;this.clock=clock;
-        ledger=new TagLedger(CombatStore.read(stateFile,TagLedger.Data.class,new TagLedger.Data()));ledger.prune(now());save();
+        ledger=new TagLedger(CombatStore.read(stateFile,TagLedger.Data.class,new TagLedger.Data()));ledger.prune(now());
+        if(!trySave())throw new IllegalStateException("Combat state is not writable; refusing to start without durable logout protection: "+stateFile);
         events=new HostedEvents(this,stateFile.resolveSibling("event.json"));
         permissions=new StaffPermissions(this);staff=new StaffService(this);
     }
@@ -92,7 +94,7 @@ public final class CombatService {
             var kingdoms=KingdomsMod.service;boolean nativeHud=kingdoms!=null&&(kingdoms.config.territoryActionBar||kingdoms.config.warActionBar);
             if(!nativeHud||!config.appendToKingdomsActionBar)for(ServerPlayer p:server.getPlayerList().getPlayers())if(status(p).active()&&p.connection!=null)p.connection.send(new ClientboundSetActionBarTextPacket(component(p)));
         }
-        if(dirty&&now()-lastSave>=config.saveIntervalSeconds*1000L)save();
+        if(dirty&&now()-lastSaveAttempt>=config.saveIntervalSeconds*1000L)save();
     }
     public void damage(ServerPlayer victim,DamageSource source,float base,float taken,boolean blocked){
         if(!config.enabled||!victim.isAlive()||(taken<=0&&!(blocked&&config.tagBlockedHits&&base>0)))return;
@@ -116,10 +118,14 @@ public final class CombatService {
     public void death(ServerPlayer p,DamageSource source){UUID killer=source.getEntity() instanceof ServerPlayer other?other.getUUID():null;ledger.death(p.getUUID(),killer,config);dirty=true;save();}
     public void disconnect(ServerPlayer p){
         var current=status(p);
-        if(config.enabled&&healthy&&(!stopping||config.punishDuringShutdown)&&p.isAlive()&&!bypass(p)&&!staffMode(p)&&TagLedger.penalty(current,config)){
-            UUID penalty=UUID.randomUUID();ledger.data.logoutPenalties.put(p.getUUID(),penalty);save();
-            ((PenaltyReceipt)p).combat$penaltyReceipt(penalty);logoutDeath(p);
-            if(config.broadcastLogoutDeaths)server.getPlayerList().broadcastSystemMessage(message(config.logoutMessage.replace("{player}",p.getName().getString()),config.errorColor),false);
+        if(config.enabled&&(!stopping||config.punishDuringShutdown)&&p.isAlive()&&!bypass(p)&&!staffMode(p)&&TagLedger.penalty(current,config)){
+            UUID pending=ledger.data.logoutPenalties.get(p.getUUID());
+            UUID penalty=pending!=null&&!pending.equals(((PenaltyReceipt)p).combat$penaltyReceipt())?pending:UUID.randomUUID();
+            ledger.data.logoutPenalties.put(p.getUUID(),penalty);
+            if(trySave()){
+                ((PenaltyReceipt)p).combat$penaltyReceipt(penalty);logoutDeath(p);
+                if(config.broadcastLogoutDeaths)server.getPlayerList().broadcastSystemMessage(message(config.logoutMessage.replace("{player}",p.getName().getString()),config.errorColor),false);
+            }
         }
         events.leave(p);staff.disconnect(p);staffModes.remove(p.getUUID());permissions.leave(p);previous.remove(p.getUUID());lastDenial.remove(p.getUUID());dirty=true;save();
     }
@@ -128,7 +134,10 @@ public final class CombatService {
         permissions.join(p);staff.join(p);permissions.refreshCommands(p);
         UUID penalty=ledger.data.logoutPenalties.get(p.getUUID());
         if(penalty!=null){
-            if(!penalty.equals(((PenaltyReceipt)p).combat$penaltyReceipt())){((PenaltyReceipt)p).combat$penaltyReceipt(penalty);if(p.isAlive())logoutDeath(p);}
+            if(!penalty.equals(((PenaltyReceipt)p).combat$penaltyReceipt())){
+                if(!trySave()){p.connection.disconnect(text("Combat data could not be saved. Please retry shortly or contact staff.","red"));return;}
+                ((PenaltyReceipt)p).combat$penaltyReceipt(penalty);if(p.isAlive())logoutDeath(p);
+            }
             // Keep the journal until a subsequent login proves the death receipt reached player data.
             else{ledger.data.logoutPenalties.remove(p.getUUID());save();}
         }
@@ -176,7 +185,22 @@ public final class CombatService {
     private Component message(String value,String color){return config.prefix.isBlank()?text(value,color):Component.literal("["+Ui.caps(config.prefix)+"] ").withStyle(ChatFormatting.DARK_GRAY).append(text(value,color));}
     private void tell(ServerPlayer p,String value){if(config.chatNotifications&&p.connection!=null){var status=ledger.status(p.getUUID(),now());p.sendSystemMessage(message(format(value,p),status.combatMillis()>0?config.combatColor:status.warMillis()>0?config.warColor:config.airDropColor));}}
     void sound(ServerPlayer p,String id){if(!config.sounds||p.connection==null)return;var key=Identifier.tryParse(id);if(key!=null)BuiltInRegistries.SOUND_EVENT.get(key).ifPresent(sound->p.connection.send(new ClientboundSoundPacket(sound,SoundSource.UI,p.getX(),p.getY(),p.getZ(),config.soundVolume,1,p.getRandom().nextLong())));}
-    public void save(){try{TagLedger.validate(ledger.data);CombatStore.write(stateFile,ledger.data);dirty=false;lastSave=now();healthy=true;}catch(RuntimeException e){healthy=false;KingdomsCombat.LOG.error("Combat persistence failed; restricted teleports remain blocked",e);throw e;}}
+    public void save(){trySave();}
+    private synchronized boolean trySave(){
+        lastSaveAttempt=now();
+        try{
+            TagLedger.validate(ledger.data);CombatStore.write(stateFile,ledger.data);dirty=false;
+            if(!healthy)KingdomsCombat.LOG.info("Combat persistence recovered; pending state saved to {}",stateFile);
+            healthy=true;saveFailureReported=false;return true;
+        }catch(RuntimeException e){
+            healthy=false;dirty=true;
+            if(!saveFailureReported||now()-lastSaveError>=30000){
+                saveFailureReported=true;lastSaveError=now();
+                KingdomsCombat.LOG.error("Combat persistence failed; retaining pending state for retry. Restricted teleports remain blocked and unjournaled logout deaths are deferred: {}",stateFile,e);
+            }
+            return false;
+        }
+    }
     public void reload(){CombatConfig next=CombatStore.read(configFile,CombatConfig.class,new CombatConfig());next.validate();config=next;CombatStore.write(configFile,next);}
     public void replaceConfig(CombatConfig next){next.validate();CombatStore.write(configFile,next);config=next;}
     public void stop(){stopping=true;staff.stop();events.hide();save();}

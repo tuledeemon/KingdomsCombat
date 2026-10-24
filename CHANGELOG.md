@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.1.1
+
+- Fix the `state.json.tmp → state.json` missing-file crash: serialize save/read transactions and stage each write in its own unique file in the destination directory.
+- Flush staged data before replacing the destination; clean only the current write's temporary file and preserve legacy `.tmp` recovery files.
+- Runtime combat-save failures retain pending changes in memory, retry at the configured save interval and log errors with a 30-second throttle. Ordinary restricted teleports remain blocked until a save succeeds.
+- Defer logout death if its penalty journal cannot be saved; reject pending-penalty recovery during a storage outage and resume safely once the journal is durable. Startup still refuses an unwritable combat-state file.
+- Add concurrent-writer and filesystem-failure regression coverage, including real death/disconnect callbacks and recovery.
+
 ## 1.1.0
 
 - Restrict recognized staff to the configured LuckPerms default group's permissions while staffmode is off; preserve their assigned groups and nodes, including contextual inheritance. Suppress native OP fallback while off and retain separate authorization for `/staffmode`.

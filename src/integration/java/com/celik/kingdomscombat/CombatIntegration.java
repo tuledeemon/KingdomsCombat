@@ -42,6 +42,7 @@ public final class CombatIntegration implements ModInitializer {
         var stateFile=server.getWorldPath(LevelResource.ROOT).resolve("test-combat-state.json");CombatStore.write(stateFile,new TagLedger.Data());CombatStore.write(stateFile.resolveSibling("event.json"),new HostedEvents.State());CombatService s=new CombatService(server,cfg,server.getWorldPath(LevelResource.ROOT).resolve("test-combat-config.json"),stateFile,()->time[0]);KingdomsCombat.service=s;
         ServerLevel level=server.overworld();level.getChunk(11000>>4,12000>>4);var a=player(server,level,"CombatAlpha",11000,160,12000);var b=player(server,level,"CombatBeta",11000,160,12003);var c=player(server,level,"CombatGamma",11000,160,12006);
         try{
+            PersistenceIntegration.run(server,this::check);
             StaffIntegration.run(server,s,time,this::check);
             check((Object)kingdoms.airDrops instanceof AirDropsAccessor,"addon reads live AirDrop data without changing Kingdoms source");
             check((Object)a instanceof PenaltyReceipt,"logout receipt mixin is installed");

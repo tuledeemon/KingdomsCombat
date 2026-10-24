@@ -4,6 +4,8 @@ A separate **server-only Fabric 26.2 addon** for [Kingdoms](https://github.com/t
 
 **No client mod or resource pack is needed.** Custom menus, messages, titles and the countdown use Kingdoms' small-caps style.
 
+**1.1.1:** Fixes the combat-save crash with serialized writes, unique temporary files and automatic runtime retry. Failed combat saves retain pending changes in memory and defer unjournaled logout deaths.
+
 **1.1.0:** `/staffmode` now controls staff permissions as well as the combat exemption. While off, recognized staff receive only the LuckPerms default group's permissions, including OP restriction. While on, their original permissions return and `/staff` opens freeze, warning, mute, kick, ban and notes tools. Staff chat uses `/sc`. Timed hosted events and `/event` remain available.
 
 ## Default rules
