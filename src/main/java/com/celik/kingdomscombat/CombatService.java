@@ -117,6 +117,7 @@ public final class CombatService {
     }
     public void death(ServerPlayer p,DamageSource source){UUID killer=source.getEntity() instanceof ServerPlayer other?other.getUUID():null;ledger.death(p.getUUID(),killer,config);dirty=true;save();}
     public void disconnect(ServerPlayer p){
+        if(!server.isSameThread())throw new IllegalStateException("Combat logout must run before player removal on the server thread.");
         var current=status(p);
         if(config.enabled&&(!stopping||config.punishDuringShutdown)&&p.isAlive()&&!bypass(p)&&!staffMode(p)&&TagLedger.penalty(current,config)){
             UUID pending=ledger.data.logoutPenalties.get(p.getUUID());
@@ -144,7 +145,7 @@ public final class CombatService {
         exposure(p);previous.put(p.getUUID(),status(p));
         events.join(p);
     }
-    private void logoutDeath(ServerPlayer p){p.setHealth(0);p.die(p.damageSources().genericKill());}
+    private void logoutDeath(ServerPlayer p){p.closeContainer();p.setHealth(0);p.die(p.damageSources().genericKill());}
     public boolean logoutPunished(ServerPlayer p){return !staffMode(p)&&TagLedger.penalty(status(p),config);}
     public boolean allowTeleport(ServerPlayer p,boolean notify){
         if(staff.frozen(p.getUUID())&&!staff.internalMove()){if(notify)p.sendSystemMessage(text("You cannot teleport during a staff review.","red"));return false;}

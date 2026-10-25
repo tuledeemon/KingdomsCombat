@@ -44,6 +44,7 @@ public final class CombatIntegration implements ModInitializer {
         try{
             PersistenceIntegration.run(server,this::check);
             StaffIntegration.run(server,s,time,this::check);
+            LogoutDropIntegration.run(server,s,time,this::check);
             check((Object)kingdoms.airDrops instanceof AirDropsAccessor,"addon reads live AirDrop data without changing Kingdoms source");
             check((Object)a instanceof PenaltyReceipt,"logout receipt mixin is installed");
             check(!s.status(a).active()&&s.allowTeleport(a,false),"untagged player can teleport");
@@ -135,7 +136,7 @@ public final class CombatIntegration implements ModInitializer {
 
             s.ledger.clear(a.getUUID());s.ledger.manual(a.getUUID(),time[0],20);s.stopping=true;s.disconnect(a);check(a.isAlive()&&s.ledger.data.logoutPenalties.isEmpty(),"normal server shutdown does not kill combat-tagged players");s.stopping=false;
             a.setItemInHand(InteractionHand.MAIN_HAND,ItemStack.EMPTY);a.getInventory().setItem(9,new ItemStack(Items.DIAMOND,3));s.ledger.manual(a.getUUID(),time[0],20);
-            ServerPlayConnectionEvents.DISCONNECT.invoker().onPlayDisconnect(a.connection,server);check(!a.isAlive()&&a.getInventory().getItem(9).isEmpty(),"real disconnect callback kills the tagged player with native inventory drops");check(s.ledger.data.logoutPenalties.containsKey(a.getUUID())&&((PenaltyReceipt)a).combat$penaltyReceipt()!=null,"logout death is journaled with a player receipt");
+            a.connection.onDisconnect(new net.minecraft.network.DisconnectionDetails(Component.literal("Combat logout fixture")));check(!a.isAlive()&&a.getInventory().getItem(9).isEmpty(),"native disconnect kills the tagged player with immediate inventory drops");check(s.ledger.data.logoutPenalties.containsKey(a.getUUID())&&((PenaltyReceipt)a).combat$penaltyReceipt()!=null,"logout death is journaled with a player receipt");
             var output=TagValueOutput.createWithContext(ProblemReporter.DISCARDING,level.registryAccess());a.saveWithoutId(output);var nbt=output.buildResult();check(nbt.getStringOr("kingdomscombat_logout_receipt","").equals(s.ledger.data.logoutPenalties.get(a.getUUID()).toString()),"receipt is part of the same vanilla player save as death and inventory");
             var restored=player(server,level,"ReceiptRecovery",11000,160,12000);restored.load(TagValueInput.create(ProblemReporter.DISCARDING,level.registryAccess(),nbt));UUID penalty=s.ledger.data.logoutPenalties.get(a.getUUID());s.ledger.data.logoutPenalties.put(restored.getUUID(),penalty);s.join(restored);check(!s.ledger.data.logoutPenalties.containsKey(restored.getUUID()),"saved receipt prevents applying a logout death twice");remove(server,restored);
             b.setHealth(20);s.ledger.clear(b.getUUID());s.ledger.data.logoutPenalties.put(b.getUUID(),UUID.randomUUID());((PenaltyReceipt)b).combat$penaltyReceipt(null);var loading=ServerGamePacketListenerImpl.class.getDeclaredField("waitingForRespawn");loading.setAccessible(true);loading.setBoolean(b.connection,true);check(!b.connection.hasClientLoaded(),"logout recovery fixture has normal login/respawn immunity");s.join(b);check(!b.isAlive()&&((PenaltyReceipt)b).combat$penaltyReceipt()!=null,"interrupted logout penalty is applied on next join despite loading immunity");

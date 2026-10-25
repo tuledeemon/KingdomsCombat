@@ -25,7 +25,6 @@ public final class KingdomsCombat implements ModInitializer {
         ServerTickEvents.END_SERVER_TICK.register(server->{if(service!=null)service.tick();});
         ServerLivingEntityEvents.AFTER_DAMAGE.register((entity,source,base,taken,blocked)->{if(entity instanceof ServerPlayer p&&service!=null)service.damage(p,source,base,taken,blocked);});
         ServerLivingEntityEvents.AFTER_DEATH.register((entity,source)->{if(entity instanceof ServerPlayer p&&service!=null)service.death(p,source);});
-        ServerPlayConnectionEvents.DISCONNECT.register((handler,server)->{if(service!=null)service.disconnect(handler.player);});
         ServerPlayConnectionEvents.JOIN.register((handler,sender,server)->{if(service!=null)service.join(handler.player);});
         ServerPlayerEvents.COPY_FROM.register((oldPlayer,newPlayer,alive)->{((PenaltyReceipt)newPlayer).combat$penaltyReceipt(((PenaltyReceipt)oldPlayer).combat$penaltyReceipt());((PenaltyReceipt)newPlayer).combat$eventReceipt(((PenaltyReceipt)oldPlayer).combat$eventReceipt());});
         CommandRegistrationCallback.EVENT.register((dispatcher,access,environment)->CombatCommands.register(dispatcher));

@@ -1,4 +1,12 @@
-# Release verification — 1.2.0
+# Release verification — 1.2.1
+
+**66 unit tests and 197 dedicated-server checks passed** on Minecraft 26.2 / Java 25 with Fabric Loader 0.19.5, Fabric API 0.160.0+26.2, Kingdoms 1.11.0, EconomyCraft 1.10.0, LuckPerms 5.5.85, HuskHomes 4.11-9ed80cc and C2ME 0.4.1-beta.1.0+26.2. No graphical client or production server was used.
+
+- The native disconnect handler creates physical inventory, armor, offhand and cursor item entities before any reconnect. The saved player file already contains zero health, an empty inventory and the matching penalty receipt.
+- Reloading that player file and joining acknowledges the receipt without producing additional drops. Removing a player for protocol reconfiguration does not trigger logout death.
+- Existing combat, staff exemptions, shutdown behavior, persistence failures, events and teleport checks pass.
+
+## Previous release — 1.2.0
 
 **66 unit tests and 192 dedicated-server checks passed** on Minecraft 26.2 / Java 25 with Fabric Loader 0.19.5, Fabric API 0.160.0+26.2, Kingdoms 1.10.1, EconomyCraft 1.10.0, LuckPerms 5.5.85, HuskHomes 4.11-9ed80cc and C2ME 0.4.1-beta.1.0+26.2. No graphical client or production server was used.
 

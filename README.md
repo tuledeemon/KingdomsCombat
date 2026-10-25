@@ -4,6 +4,8 @@ A separate **server-only Fabric 26.2 addon** for [Kingdoms](https://github.com/t
 
 **No client mod or resource pack is needed.** Custom menus, messages, titles and the countdown use Kingdoms' small-caps style.
 
+**1.2.1:** Combat-log death and item drops now happen immediately at the logout location, before Minecraft saves and removes the player. Reconnecting does not repeat the death.
+
 **1.2.0:** Hosted events can use a private input chest with required items, item/money rewards, configurable repeat claims and optional ending after the first claim. `/eventhost chest` opens its setup menu. Teleport destinations inside incoming or unclaimed AirDrop areas are blocked from outside, using the configured AirDrop radius; staff mode retains its bypass.
 
 **1.1.1:** Fixes the combat-save crash with serialized writes, unique temporary files and automatic runtime retry. Failed combat saves retain pending changes in memory and defer unjournaled logout deaths.

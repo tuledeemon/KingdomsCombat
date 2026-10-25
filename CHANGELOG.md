@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.2.1
+
+- Run combat-log death at the start of vanilla server-side disconnect, before the player save/removal. Remove the network-event callback that could race logout.
+- Close the current container before death so cursor and crafting inputs follow normal inventory drops. Keep native inventory/experience rules and existing staff/shutdown exemptions.
+- Keep the saved death receipt so rejoining does not repeat the penalty. Protocol reconfiguration does not trigger logout death.
+
 ## 1.2.0
 
 - Add host-configured event input chests with exact item/component/count requirements, up to nine required stacks, up to eight reward stacks, and an optional EconomyCraft wallet reward. Native chest and input-dialog menus need no client mod.
