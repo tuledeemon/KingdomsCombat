@@ -136,5 +136,7 @@
     "tell",
     "reply",
     "r"
-  ]
+  ],
+  "arenaFluidFlow": true,
+  "arenaSpectatorsHearStaff": true
 }
