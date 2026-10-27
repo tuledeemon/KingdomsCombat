@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.3.1
+
+- Allow solo applications and 2v2 captain invitations/acceptances without banners. Preserve optional held-banner shield customization; leave the saved admin kit unchanged without a banner. Update menus, notices and guide.
+- Verify no-banner solo acceptance, normal kit shield retention and no-banner doubles registration with native server checks.
+
 ## 1.3.0
 
 - Add one protected event-arena cuboid with two opposing spawns, admin-saved inventory/armor kit and individually selected gate blocks. Keep gates closed during preparation, open them at fight start and restore terrain/gates afterward.

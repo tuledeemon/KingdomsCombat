@@ -18,8 +18,8 @@ final class ArenaUi {
         m.button(4,Items.GOLD_INGOT,"Your Elo: "+r.elo,List.of("Shared 1v1 / 2v2 ladder",r.wins+" wins • "+r.losses+" losses"),null);
         m.button(13,Items.IRON_SWORD,e==null?"No tournament":e.name,List.of(e==null?"Staff can open applications":e.phase+" • "+e.teamSize+"v"+e.teamSize,e==null?"":e.entries.size()+" complete entries","Only current fighters can build or PvP"),null);
         if(s.active()&&e.phase==ArenaRules.Phase.APPLICATIONS){
-            if(e.teamSize==1)m.button(28,Items.BANNER.white(),"Apply with held banner",List.of("Copies your banner onto your kit shield","Your banner is not consumed","Latest excess entries are excluded"),()->{s.apply(p);player(s,p);});
-            else{m.button(28,Items.BANNER.white(),"Invite a teammate",List.of("Both players hold a banner","Teammate must accept"),()->input(p,"Invite teammate","Player name","/tournament invite $(value)"));m.button(30,Items.DYE.lime(),"Accept team invitation",List.of("Hold your banner first"),()->{s.accept(p);player(s,p);});}
+            if(e.teamSize==1)m.button(28,Items.BANNER.white(),"Apply",List.of("Optional: hold a banner to customize your shield","Without a banner, use the normal kit","Latest excess entries are excluded"),()->{s.apply(p);player(s,p);});
+            else{m.button(28,Items.BANNER.white(),"Invite a teammate",List.of("Banners are optional for both players","Teammate must accept"),()->input(p,"Invite teammate","Player name","/tournament invite $(value)"));m.button(30,Items.DYE.lime(),"Accept team invitation",List.of("Optional: hold a banner to customize your shield"),()->{s.accept(p);player(s,p);});}
         }
         m.button(37,Items.NAME_TAG,"Applicants",List.of("Application order and complete teams"),()->entries(s,p,0));
         m.button(32,Items.WRITABLE_BOOK,"Brackets",List.of("Current match and waiting pairs"),()->brackets(s,p,0));

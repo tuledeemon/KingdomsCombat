@@ -30,11 +30,12 @@ final class ArenaIntegration {
             Gate gate=new Gate();gate.x=x+8;gate.y=161;gate.z=z+8;gate.state=net.minecraft.world.level.block.state.BlockState.CODEC.encodeStart(JsonOps.INSTANCE,Blocks.IRON_BARS.defaultBlockState()).getOrThrow().toString();arena.data.setup.gates.add(gate);arena.resetTerrain();
             check.accept(arena.overlapsChunk(level,x>>4,z>>4),"arena claim reserves its intersecting wilderness chunks");
             boolean claimRejected=false;try{KingdomsMod.service.create(a,"ArenaShouldNotClaim");}catch(IllegalArgumentException expected){claimRejected=expected.getMessage().contains("arena");}check.accept(claimRejected,"kingdom creation cannot overlap an event arena");
-            arena.open("Integration tournament",1);for(ServerPlayer p:players)arena.apply(p);arena.bracket(a.getUUID(),b.getUUID());arena.bracket(c.getUUID(),d.getUUID());arena.start();prepareLoaded(arena);
+            arena.open("Integration tournament",1);b.getInventory().setItem(0,new ItemStack(Items.STONE));for(ServerPlayer p:players)arena.apply(p);check.accept(arena.data.event.entries.get(b.getUUID()).banners.get(b.getUUID()).isEmpty(),"solo applications without a held banner are accepted");arena.bracket(a.getUUID(),b.getUUID());arena.bracket(c.getUUID(),d.getUUID());arena.start();prepareLoaded(arena);
             check.accept(arena.data.event.entries.size()==4&&!arena.data.event.entries.containsKey(late.getUUID()),"five applications retain the first four and exclude the most recent");
             check.accept(arena.data.match.phase==MatchPhase.COUNTDOWN&&arena.reserved(a.getUUID())&&!arena.reserved(c.getUUID()),"only current fighters receive kits and inventory backups");
             check.accept(!arena.build(c,level,new BlockPos(x+4,161,z+4))&&!arena.fighter(a.getUUID()),"registered waiting players cannot build and countdown fighters cannot build early");
             check.accept(a.getInventory().getItem(0).is(Items.DIAMOND_SWORD)&&a.getOffhandItem().is(Items.SHIELD)&&a.getOffhandItem().get(DataComponents.BASE_COLOR)==DyeColor.BLUE,"saved kit is applied and banner color appears on its shield");
+            check.accept(ItemStack.isSameItemSameComponents(b.getOffhandItem(),new ItemStack(Items.SHIELD)),"no-banner applicants retain the unmodified admin kit shield");
             check.accept(!Protection.damage(b,a.damageSources().playerAttack(a)),"countdown protection blocks PvP");
             check.accept(!service.allowTeleport(a,false)&&!service.allowDestination(c,level,x+8,161,z+8,Set.of()),"fighters cannot teleport away and waiting players cannot teleport into the arena");
             check.accept(a.drop(new ItemStack(Items.DIAMOND_SWORD),false,false)==null,"current fighters cannot drop kit items through the native drop method");
@@ -65,8 +66,9 @@ final class ArenaIntegration {
             check.accept(replacement.arenas.data.match==null&&replacement.arenas.data.event.paused&&replacement.arenas.data.snapshots.isEmpty()&&a.getInventory().getItem(9).is(Items.EMERALD),"restart voids the interrupted match and restores original items without losing the bracket");
             check.accept(replacement.arenas.rating(a.getUUID()).wins==1&&replacement.arenas.rating(d.getUUID()).wins==1,"restart recovery does not grant duplicate Elo results");
             replacement.arenas.cancel();
-            ArenaService doubles=replacement.arenas;doubles.open("Doubles integration",2);doubles.invite(a,b);doubles.accept(b);doubles.invite(d,late);doubles.accept(late);doubles.bracket(a.getUUID(),d.getUUID());
+            ArenaService doubles=replacement.arenas;doubles.open("Doubles integration",2);d.getInventory().setItem(0,new ItemStack(Items.STONE));late.getInventory().setItem(0,new ItemStack(Items.EMERALD));doubles.invite(a,b);doubles.accept(b);doubles.invite(d,late);doubles.accept(late);doubles.bracket(a.getUUID(),d.getUUID());
             check.accept(doubles.data.event.entries.size()==2&&doubles.data.event.entries.get(a.getUUID()).players.equals(List.of(a.getUUID(),b.getUUID())),"2v2 captain invitations require teammate acceptance and register complete ordered teams");
+            check.accept(doubles.data.event.entries.get(d.getUUID()).banners.values().stream().allMatch(String::isEmpty),"2v2 captain and teammate can invite and accept without banners");
             doubles.start();prepareLoaded(doubles);time[0]+=cfg.arenaCountdownSeconds*1000L;doubles.tick();
             check.accept(!Protection.damage(b,a.damageSources().playerAttack(a))&&Protection.damage(d,a.damageSources().playerAttack(a)),"2v2 current teammates cannot hurt one another while opponents can fight");
             int oldA=doubles.rating(a.getUUID()).elo,oldB=doubles.rating(b.getUUID()).elo;

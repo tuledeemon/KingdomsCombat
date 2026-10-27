@@ -1,4 +1,8 @@
-# Release verification — 1.3.0
+# Release verification — 1.3.1
+
+**77 unit tests and 231 dedicated-server checks passed.** Additional native checks verify solo applications without banners, unchanged default kit shields and doubles invitation/acceptance with neither player holding a banner. Existing banner customization, arena combat, inventory recovery, Elo, voice hooks and live-tick loading/return checks continue passing. No graphical client or production server was used.
+
+## Previous release — 1.3.0
 
 **77 unit tests and 228 dedicated-server checks passed** on Minecraft 26.2, Java 25, Fabric Loader 0.19.5, Fabric API 0.160.0+26.2, Kingdoms 1.12.1, EconomyCraft 1.10.0, LuckPerms 5.5.85, HuskHomes 4.11-9ed80cc, C2ME 0.4.1-beta.1.0+26.2 and Simple Voice Chat 2.6.22. No graphical client, live microphone or production server was used.
 
