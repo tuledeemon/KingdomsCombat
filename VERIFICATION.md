@@ -1,4 +1,16 @@
-# Release verification — 1.2.1
+# Release verification — 1.3.0
+
+**77 unit tests and 228 dedicated-server checks passed** on Minecraft 26.2, Java 25, Fabric Loader 0.19.5, Fabric API 0.160.0+26.2, Kingdoms 1.12.1, EconomyCraft 1.10.0, LuckPerms 5.5.85, HuskHomes 4.11-9ed80cc, C2ME 0.4.1-beta.1.0+26.2 and Simple Voice Chat 2.6.22. No graphical client, live microphone or production server was used.
+
+- Check every entry count from 2 through 64 for earliest power-of-two trimming, complete doubles teams, manual pair order, duplicate rejection, region bounds and shared Elo expectations.
+- Native kit swaps verify durable original components, banner shield color, countdown gates, current-opponent PvP, waiting-entrant build/damage rejection, kingdom-claim overlap rejection and kit drop/projectile boundaries.
+- Native lethal damage produces arena elimination without death drops and restores equipment, health, effects and XP. Doubles restore an eliminated member while their teammate continues; team damage is refused. Gates and terrain reset between matches.
+- Native disconnect forfeits the side, preserves original items and skips ordinary combat-log death. Native restoration receipts prevent replaying inventory contents. Restart reconstruction preserves the bracket, voids its interrupted match and restores originals.
+- A live-tick fixture exercises real arena chunk-ticket futures, countdown progression, native lethal damage and unloaded-origin return tickets. Both inventories and coordinates restore before backups are retired.
+- Simple Voice Chat loads the addon plugin and registers its handlers. API-event checks cover muted microphone input, restricted spectator audio and mute expiry. Voice callbacks use immutable policy snapshots.
+- Existing combat logout drops, teleport restrictions, reward chests, staff permissions, moderation and persistence-failure checks still pass. The release JAR excludes dependency/API JARs and test classes.
+
+## Previous release — 1.2.1
 
 **66 unit tests and 197 dedicated-server checks passed** on Minecraft 26.2 / Java 25 with Fabric Loader 0.19.5, Fabric API 0.160.0+26.2, Kingdoms 1.11.0, EconomyCraft 1.10.0, LuckPerms 5.5.85, HuskHomes 4.11-9ed80cc and C2ME 0.4.1-beta.1.0+26.2. No graphical client or production server was used.
 

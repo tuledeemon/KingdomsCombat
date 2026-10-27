@@ -203,3 +203,7 @@ Moderation and permission restrictions operate independently of the combat `enab
 | `eventStartMessage`, `eventEndMessage`, `eventStopMessage` | Custom announcement text, supporting `{name}`, `{host}` and `{time}` |
 
 Event sounds also respect the global `sounds`/`soundVolume` settings and use `tagSound`/`endSound`. Event hosting is independent of the combat system's `enabled` toggle.
+
+## Tournaments and voice moderation
+
+See [Tournaments and Duels](TOURNAMENTS_GUIDE.md) for arena setup, kits, gates, applications, manual brackets and Elo. Staff mutes also silence Simple Voice Chat microphone/group speech when the optional integration is installed; `staffMuteVoice` controls it. Arena spectator voice restrictions are separate and configurable.

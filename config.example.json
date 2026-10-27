@@ -111,5 +111,30 @@
     "message",
     "reply",
     "r"
+  ],
+  "arenaEnabled": true,
+  "arenaBuildAllowed": true,
+  "arenaVoiceRestricted": true,
+  "staffMuteVoice": true,
+  "arenaAutoNext": true,
+  "arenaCountdownSeconds": 10,
+  "arenaBetweenMatchesSeconds": 15,
+  "arenaMaxFightSeconds": 600,
+  "arenaMaxTeams": 64,
+  "arenaMaxGates": 512,
+  "arenaMaxChangedBlocks": 4096,
+  "arenaMaxRegionVolume": 4000000,
+  "arenaMaxRegionChunks": 256,
+  "arenaEloStart": 1000,
+  "arenaEloK": 32,
+  "arenaEloScale": 400,
+  "arenaAllowedCommands": [
+    "event",
+    "tournament",
+    "combat",
+    "msg",
+    "tell",
+    "reply",
+    "r"
   ]
 }

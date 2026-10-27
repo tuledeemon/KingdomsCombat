@@ -1,9 +1,35 @@
 {
-  "schemaVersion": 1, "id": "kingdoms_combat", "version": "${version}",
-  "name": "Kingdoms Combat", "description": "Server-only combat protection, staff mode permissions and moderation tools for Kingdoms.",
-  "authors": ["Çelik"], "environment": "server",
-  "entrypoints": { "main": ["com.celik.kingdomscombat.KingdomsCombat"] },
-  "mixins": ["kingdoms-combat.mixins.json"],
-  "depends": { "fabricloader": ">=0.19.5", "minecraft": "26.2", "java": ">=25", "fabric-api": "*", "kingdoms": ">=1.7.1", "placeholder-api": ">=3.1.0-beta.1", "luckperms": ">=5.5.85" },
-  "suggests": { "huskhomes": ">=4.11" }
+  "schemaVersion": 1,
+  "id": "kingdoms_combat",
+  "version": "${version}",
+  "name": "Kingdoms Combat",
+  "description": "Server-only combat protection, staff mode permissions and moderation tools for Kingdoms.",
+  "authors": [
+    "Çelik"
+  ],
+  "environment": "server",
+  "entrypoints": {
+    "main": [
+      "com.celik.kingdomscombat.KingdomsCombat"
+    ],
+    "voicechat": [
+      "com.celik.kingdomscombat.VoiceChatHook"
+    ]
+  },
+  "mixins": [
+    "kingdoms-combat.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=0.19.5",
+    "minecraft": "26.2",
+    "java": ">=25",
+    "fabric-api": "*",
+    "kingdoms": ">=1.12.1",
+    "placeholder-api": ">=3.1.0-beta.1",
+    "luckperms": ">=5.5.85"
+  },
+  "suggests": {
+    "huskhomes": ">=4.11",
+    "voicechat": ">=2.6.22"
+  }
 }

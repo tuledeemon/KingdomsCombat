@@ -26,6 +26,7 @@ public final class CombatService {
     public final MinecraftServer server;
     public final TagLedger ledger;
     public final HostedEvents events;
+    public final ArenaService arenas;
     public final StaffPermissions permissions;
     public final StaffService staff;
     public CombatConfig config;
@@ -45,13 +46,14 @@ public final class CombatService {
         ledger=new TagLedger(CombatStore.read(stateFile,TagLedger.Data.class,new TagLedger.Data()));ledger.prune(now());
         if(!trySave())throw new IllegalStateException("Combat state is not writable; refusing to start without durable logout protection: "+stateFile);
         events=new HostedEvents(this,stateFile.resolveSibling("event.json"));
-        permissions=new StaffPermissions(this);staff=new StaffService(this);
+        permissions=new StaffPermissions(this);staff=new StaffService(this);arenas=new ArenaService(this);
     }
     public long now(){return clock.getAsLong();}
     public static boolean allowed(CommandSourceStack source,String permission,int level){boolean fallback=admin(source,level);return !permission.isBlank()&&FabricLoader.getInstance().isModLoaded("fabric-permissions-api-v0")?PermissionHook.allowed(source,permission,fallback):fallback;}
     boolean staffFlag(UUID id){return staffModes.contains(id);}
     public boolean staffMode(ServerPlayer p){return staffModes.contains(p.getUUID())&&permissions.authorize(p);}
     public boolean toggleStaffMode(ServerPlayer p){
+        if(arenas!=null&&arenas.reserved(p.getUUID()))throw new IllegalArgumentException("Finish your arena match before changing staff mode.");
         if(staffModes.remove(p.getUUID())){staff.leave(p);permissions.refreshCommands(p);return false;}
         if(!permissions.authorize(p))throw new IllegalArgumentException("Staff permission required.");
         if(staff.frozen(p.getUUID()))throw new IllegalArgumentException("Your staff review must be ended before enabling staff mode.");
@@ -66,6 +68,7 @@ public final class CombatService {
         return config.respectBypassPermission&&!config.bypassPermission.isBlank()&&FabricLoader.getInstance().isModLoaded("fabric-permissions-api-v0")&&PermissionHook.bypass(p,config.bypassPermission);
     }
     public TagLedger.Status status(ServerPlayer player){
+        if(arenas!=null&&arenas.reserved(player.getUUID()))return new TagLedger.Status(0,0,0,Set.of());
         if(staff.frozen(player.getUUID()))return new TagLedger.Status(0,0,0,Set.of());
         if(!config.enabled||bypass(player))return new TagLedger.Status(0,0,0,Set.of());
         if(server.isSameThread()&&player.isAlive()&&!player.isSpectator())exposure(player);
@@ -81,6 +84,8 @@ public final class CombatService {
     public void tick(){
         ticks++;if(stopping)return;
         staff.tick();
+        try{arenas.tick();}catch(RuntimeException failure){if(ticks%100==0)KingdomsCombat.LOG.error("Arena paused; recovery backups retained",failure);}
+        VoicePolicy.refresh(this);
         if(ticks%20==0)events.tick();
         if(ticks%config.pollTicks==0){
             for(ServerPlayer p:server.getPlayerList().getPlayers()){
@@ -97,6 +102,7 @@ public final class CombatService {
         if(dirty&&now()-lastSaveAttempt>=config.saveIntervalSeconds*1000L)save();
     }
     public void damage(ServerPlayer victim,DamageSource source,float base,float taken,boolean blocked){
+        if(arenas.reserved(victim.getUUID()))return;
         if(!config.enabled||!victim.isAlive()||(taken<=0&&!(blocked&&config.tagBlockedHits&&base>0)))return;
         ServerPlayer attacker=source.getEntity() instanceof ServerPlayer p?p:source.getDirectEntity() instanceof Projectile arrow&&arrow.getOwner() instanceof ServerPlayer p?p:source.getDirectEntity() instanceof LightningBolt bolt?bolt.getCause():null;
         if(attacker==null||attacker==victim||!eligible(victim)||!eligible(attacker)||!Protection.damage(victim,source))return;
@@ -118,8 +124,9 @@ public final class CombatService {
     public void death(ServerPlayer p,DamageSource source){UUID killer=source.getEntity() instanceof ServerPlayer other?other.getUUID():null;ledger.death(p.getUUID(),killer,config);dirty=true;save();}
     public void disconnect(ServerPlayer p){
         if(!server.isSameThread())throw new IllegalStateException("Combat logout must run before player removal on the server thread.");
+        boolean arenaLogout=arenas.disconnect(p);
         var current=status(p);
-        if(config.enabled&&(!stopping||config.punishDuringShutdown)&&p.isAlive()&&!bypass(p)&&!staffMode(p)&&TagLedger.penalty(current,config)){
+        if(!arenaLogout&&config.enabled&&(!stopping||config.punishDuringShutdown)&&p.isAlive()&&!bypass(p)&&!staffMode(p)&&TagLedger.penalty(current,config)){
             UUID pending=ledger.data.logoutPenalties.get(p.getUUID());
             UUID penalty=pending!=null&&!pending.equals(((PenaltyReceipt)p).combat$penaltyReceipt())?pending:UUID.randomUUID();
             ledger.data.logoutPenalties.put(p.getUUID(),penalty);
@@ -132,7 +139,7 @@ public final class CombatService {
     }
     public void join(ServerPlayer p){
         staffModes.remove(p.getUUID());
-        permissions.join(p);staff.join(p);permissions.refreshCommands(p);
+        permissions.join(p);staff.join(p);permissions.refreshCommands(p);arenas.join(p);
         UUID penalty=ledger.data.logoutPenalties.get(p.getUUID());
         if(penalty!=null){
             if(!penalty.equals(((PenaltyReceipt)p).combat$penaltyReceipt())){
@@ -148,12 +155,14 @@ public final class CombatService {
     private void logoutDeath(ServerPlayer p){p.closeContainer();p.setHealth(0);p.die(p.damageSources().genericKill());}
     public boolean logoutPunished(ServerPlayer p){return !staffMode(p)&&TagLedger.penalty(status(p),config);}
     public boolean allowTeleport(ServerPlayer p,boolean notify){
+        if(arenas.reserved(p.getUUID())&&!arenas.internalMove()){if(notify)p.sendSystemMessage(text("You cannot teleport during an arena match or inventory recovery.","red"));return false;}
         if(staff.frozen(p.getUUID())&&!staff.internalMove()){if(notify)p.sendSystemMessage(text("You cannot teleport during a staff review.","red"));return false;}
         if(!config.enabled||bypass(p))return true;
         boolean blocked=!healthy||status(p).active();if(blocked&&notify)denied(p);return !blocked;
     }
     public boolean allowDestination(ServerPlayer player,net.minecraft.server.level.ServerLevel level,double x,double y,double z,Set<net.minecraft.world.entity.Relative> relative){
-        if(!config.enabled||stopping||staff.internalMove()||bypass(player))return true;
+        if(!arenas.internalMove()&&!arenas.allowTeleport(player,level,relative.contains(net.minecraft.world.entity.Relative.X)?x+player.getX():x,relative.contains(net.minecraft.world.entity.Relative.Y)?y+player.getY():y,relative.contains(net.minecraft.world.entity.Relative.Z)?z+player.getZ():z))return false;
+        if(arenas.internalMove()||!config.enabled||stopping||staff.internalMove()||bypass(player))return true;
         if(relative.contains(net.minecraft.world.entity.Relative.X))x+=player.getX();
         if(relative.contains(net.minecraft.world.entity.Relative.Y))y+=player.getY();
         if(relative.contains(net.minecraft.world.entity.Relative.Z))z+=player.getZ();
@@ -162,6 +171,7 @@ public final class CombatService {
     }
     public boolean command(ParseResults<CommandSourceStack> parsed,String raw){
         ServerPlayer actor=parsed.getContext().getSource().getPlayer();
+        if(actor!=null&&!arenas.allowCommand(actor,raw)){actor.sendSystemMessage(text("That command is unavailable during an arena match.","red"));return false;}
         if(actor!=null&&staff.muted(actor.getUUID())&&matchesCommand(parsed,raw,config.mutedCommands)){actor.sendSystemMessage(text("You are muted.","red"));return false;}
         ServerPlayer p=parsed.getContext().getSource().getPlayer();if(p==null||!config.enabled||bypass(p))return true;
         if(!blockedCommand(parsed,raw))return true;return allowTeleport(p,true);
@@ -210,7 +220,7 @@ public final class CombatService {
             return false;
         }
     }
-    public void reload(){CombatConfig next=CombatStore.read(configFile,CombatConfig.class,new CombatConfig());next.validate();config=next;CombatStore.write(configFile,next);}
-    public void replaceConfig(CombatConfig next){next.validate();CombatStore.write(configFile,next);config=next;}
-    public void stop(){stopping=true;staff.stop();events.hide();save();}
+    public void reload(){CombatConfig next=CombatStore.read(configFile,CombatConfig.class,new CombatConfig());next.validate();if(config.arenaEnabled&&!next.arenaEnabled&&arenas.active())arenas.cancel();config=next;CombatStore.write(configFile,next);}
+    public void replaceConfig(CombatConfig next){next.validate();if(config.arenaEnabled&&!next.arenaEnabled&&arenas.active())arenas.cancel();CombatStore.write(configFile,next);config=next;}
+    public void stop(){stopping=true;arenas.stop();VoicePolicy.reset();staff.stop();events.hide();save();}
 }

@@ -6,9 +6,10 @@ Use Java **25** and the included Gradle **9.4.1** wrapper. Minecraft and Fabric 
 
 Create `libs/` with these separately distributed dependencies:
 
-- `kingdoms-1.7.1-mc26.2.jar`
+- Kingdoms **1.12.1 or newer** for 26.2 (the local historical filename may still be `kingdoms-1.7.1-mc26.2.jar`; use current JAR contents).
 - `LuckPerms-Fabric-5.5.85.jar` for 26.2; required at runtime and never bundled.
 - `placeholder-api-3.1.0-beta.1+26.2.jar`
+- `voicechat-fabric-2.6.22+26.2.jar` supplies the optional integration API during compilation and development. Voice Chat is installed separately on production servers and is not bundled.
 - EconomyCraft 1.10.0 for 26.2 and Architectury 21.1.9 for the development server.
 - `huskhomes-fabric-26.2.jar`, using the official Fabric 26.2 build `4.11-9ed80cc`.
 

@@ -4,6 +4,8 @@ A separate **server-only Fabric 26.2 addon** for [Kingdoms](https://github.com/t
 
 **No client mod or resource pack is needed.** Custom menus, messages, titles and the countdown use Kingdoms' small-caps style.
 
+**1.3.0:** Hosted duels and 1v1/2v2 single-elimination tournaments: arena claims, two spawns, gates, saved kits, banner shields, manual/automatic opening brackets and shared Elo. Only current fighters get arena permissions. Original inventories restore after defeat, logout or restart. Optional Simple Voice Chat honors staff mutes and arena restrictions. [Setup and commands](TOURNAMENTS_GUIDE.md).
+
 **1.2.1:** Combat-log death and item drops now happen immediately at the logout location, before Minecraft saves and removes the player. Reconnecting does not repeat the death.
 
 **1.2.0:** Hosted events can use a private input chest with required items, item/money rewards, configurable repeat claims and optional ending after the first claim. `/eventhost chest` opens its setup menu. Teleport destinations inside incoming or unclaimed AirDrop areas are blocked from outside, using the configured AirDrop radius; staff mode retains its bypass.
@@ -29,7 +31,7 @@ The countdown appends to the Kingdoms action bar by default. Disable `actionBar`
 Put the [release JAR](https://github.com/tuledeemon/KingdomsCombat/releases) in the **server's** `mods` folder alongside:
 
 - Minecraft **26.2**, Java **25**, Fabric Loader **0.19.5+** and Fabric API for 26.2.
-- **Kingdoms 1.7.1+** and its existing dependencies.
+- **Kingdoms 1.12.1+** and its existing dependencies.
 - Text Placeholder API **3.1.0-beta.1+26.2** (already required by Kingdoms).
 - **LuckPerms Fabric 5.5.85+** for 26.2, installed separately; required for staff permission isolation.
 
@@ -41,6 +43,7 @@ Use **`/combat`** for player status and **`/combatadmin`** for the admin menu. T
 
 - [Player and administrator guide](GUIDE.md)
 - [Staff mode and events](STAFF_EVENTS_GUIDE.md)
+- [Tournaments and duels](TOURNAMENTS_GUIDE.md)
 - [Player guide on the Kingdoms wiki](https://github.com/tuledeemon/Kingdoms/wiki/Combat-and-Teleports)
 - [Building and verification](BUILDING.md)
 - [Changelog](CHANGELOG.md)

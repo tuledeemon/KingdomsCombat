@@ -4,6 +4,8 @@ This is an optional **Kingdoms Combat** addon. These rules apply only when the s
 
 For staff-mode permissions, moderation tools and hosted events, see **[Staff Mode and Events](https://github.com/tuledeemon/Kingdoms/wiki/Staff-Mode-and-Events)**.
 
+For arena matches, sign-ups, banner shields, brackets and Elo, see **[Tournaments and Duels](TOURNAMENTS_GUIDE.md)**.
+
 ## Checking your status
 
 Use `/combat` to open a status menu. It shows your timers, opponents, whether teleport commands are available, and whether logging out would kill you.

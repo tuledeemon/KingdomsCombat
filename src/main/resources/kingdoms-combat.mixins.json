@@ -1,5 +1,30 @@
 {
-  "required": true, "package": "com.celik.kingdomscombat.mixin", "compatibilityLevel": "JAVA_25",
-  "mixins": ["AirDropsAccessor", "CommandMixin", "MovementItemMixin", "LungeMixin", "HudMixin", "PlayerReceiptMixin", "LogoutDisconnectMixin", "StaffLuckPermsMixin", "StaffPlayerPermissionsMixin", "StaffSourcePermissionsMixin", "StaffOperatorMixin", "StaffNetworkMixin", "StaffTeleportMixin"],
-  "injectors": { "defaultRequire": 1 }
+  "required": true,
+  "package": "com.celik.kingdomscombat.mixin",
+  "compatibilityLevel": "JAVA_25",
+  "mixins": [
+    "AirDropsAccessor",
+    "CommandMixin",
+    "MovementItemMixin",
+    "LungeMixin",
+    "HudMixin",
+    "PlayerReceiptMixin",
+    "LogoutDisconnectMixin",
+    "StaffLuckPermsMixin",
+    "StaffPlayerPermissionsMixin",
+    "StaffSourcePermissionsMixin",
+    "StaffOperatorMixin",
+    "StaffNetworkMixin",
+    "StaffTeleportMixin",
+    "ArenaProtectionMixin",
+    "ArenaClaimMixin",
+    "ArenaPlayerMixin",
+    "ArenaServerPlayerMixin",
+    "ArenaPickupMixin",
+    "ArenaKitEntityMixin",
+    "ArenaArrowMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
 }

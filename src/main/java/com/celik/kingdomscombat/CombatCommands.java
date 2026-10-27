@@ -17,6 +17,7 @@ public final class CombatCommands {
         d.register(literal("event").executes(c->run(c,()->s().events.menu(c.getSource().getPlayerOrException()))).then(literal("chest").executes(c->run(c,()->s().events.chests.open(c.getSource().getPlayerOrException())))).then(literal("teleport").then(argument("event",StringArgumentType.word()).executes(c->run(c,()->s().events.travel(c.getSource().getPlayerOrException(),UUID.fromString(StringArgumentType.getString(c,"event"))))))));
         d.register(literal("staffmode").requires(source->source.getPlayer()!=null&&(s().staffMode(source.getPlayer())||s().permissions.authorize(source.getPlayer()))).executes(c->run(c,()->reply(c,s().toggleStaffMode(c.getSource().getPlayerOrException())?"Staff mode enabled. Use /staff for moderation tools.":"Staff mode disabled. Default-group permissions apply."))));
         StaffCommands.register(d);
+        ArenaCommands.register(d);
         var root=literal("combatadmin").requires(source->CombatService.allowed(source,KingdomsCombat.service==null?"kingdomscombat.admin":s().config.adminPermission,KingdomsCombat.service==null?2:s().config.adminLevel)).executes(c->run(c,()->CombatMenu.admin(c.getSource().getPlayerOrException())));
         root.then(literal("reload").executes(c->run(c,()->{s().reload();reply(c,"Combat configuration reloaded.");})));
         root.then(literal("status").executes(c->run(c,()->reply(c,"Tracked players: "+s().ledger.data.tags.size()+". Pending logout penalties: "+s().ledger.data.logoutPenalties.size()))));
@@ -28,7 +29,7 @@ public final class CombatCommands {
         d.register(root);
         var event=literal("eventhost").requires(source->CombatService.allowed(source,KingdomsCombat.service==null?"kingdomscombat.eventhost":s().config.eventHostPermission,KingdomsCombat.service==null?2:s().config.adminLevel));
         event.executes(c->run(c,()->reply(c,s().events.description())));
-        event.then(literal("stop").executes(c->run(c,()->s().events.stop(c.getSource()))));
+        event.then(literal("stop").executes(c->run(c,()->{if(s().arenas.active())s().arenas.cancel();else s().events.stop(c.getSource());})));
         event.then(literal("setlocation").executes(c->run(c,()->{s().events.setLocation(c.getSource());reply(c,"Event location set to your position.");})));
         event.then(literal("description").then(argument("text",StringArgumentType.greedyString()).executes(c->run(c,()->{s().events.setDescription(c.getSource(),StringArgumentType.getString(c,"text"));reply(c,"Event description saved.");}))));
         var chest=literal("chest").executes(c->run(c,()->{if(c.getSource().getPlayer()!=null)s().events.chests.settings(c.getSource().getPlayer());else reply(c,s().events.chests.status());}));
@@ -40,6 +41,7 @@ public final class CombatCommands {
         for(String key:List.of("clearrequired","clearrewards","disable"))chest.then(literal(key).executes(c->run(c,()->{s().events.chests.setting(c.getSource(),key,"");reply(c,"Chest setup updated.");})));
         event.then(chest);
         event.then(argument("name",StringArgumentType.string()).then(argument("time",StringArgumentType.word()).executes(c->run(c,()->s().events.start(c.getSource(),StringArgumentType.getString(c,"name"),StringArgumentType.getString(c,"time"))))));
+        ArenaCommands.attach(event);
         d.register(event);
     }
     private static int run(CommandContext<CommandSourceStack> c,Action action){try{action.run();return 1;}catch(Exception e){c.getSource().sendFailure(CombatService.text(e.getMessage()==null?"Action failed.":e.getMessage(),"red"));return 0;}}

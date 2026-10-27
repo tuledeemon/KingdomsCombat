@@ -8,6 +8,9 @@ import org.spongepowered.asm.mixin.injection.*;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(ServerPlayer.class)
 public abstract class PlayerReceiptMixin implements PenaltyReceipt {
+    @Unique private UUID combat$arena;
+    public UUID combat$arenaReceipt(){return combat$arena;}
+    public void combat$arenaReceipt(UUID id){combat$arena=id;}
     @Unique private UUID combat$receipt;
     @Unique private UUID combat$eventReceipt;
     public UUID combat$eventReceipt(){return combat$eventReceipt;}
@@ -15,7 +18,7 @@ public abstract class PlayerReceiptMixin implements PenaltyReceipt {
     public UUID combat$penaltyReceipt(){return combat$receipt;}
     public void combat$penaltyReceipt(UUID id){combat$receipt=id;}
     @Inject(method="readAdditionalSaveData",at=@At("TAIL"))
-    private void read(ValueInput input,CallbackInfo ci){String saved=input.getStringOr("kingdomscombat_logout_receipt","");try{combat$receipt=saved.isBlank()?null:UUID.fromString(saved);}catch(IllegalArgumentException e){combat$receipt=null;}try{combat$eventReceipt=UUID.fromString(input.getStringOr("kingdomscombat_event_receipt",""));}catch(IllegalArgumentException e){combat$eventReceipt=null;}}
+    private void read(ValueInput input,CallbackInfo ci){try{combat$arena=UUID.fromString(input.getStringOr("kingdomscombat_arena_receipt",""));}catch(IllegalArgumentException ignored){combat$arena=null;}String saved=input.getStringOr("kingdomscombat_logout_receipt","");try{combat$receipt=saved.isBlank()?null:UUID.fromString(saved);}catch(IllegalArgumentException e){combat$receipt=null;}try{combat$eventReceipt=UUID.fromString(input.getStringOr("kingdomscombat_event_receipt",""));}catch(IllegalArgumentException e){combat$eventReceipt=null;}}
     @Inject(method="addAdditionalSaveData",at=@At("TAIL"))
-    private void write(ValueOutput output,CallbackInfo ci){if(combat$receipt!=null)output.putString("kingdomscombat_logout_receipt",combat$receipt.toString());if(combat$eventReceipt!=null)output.putString("kingdomscombat_event_receipt",combat$eventReceipt.toString());}
+    private void write(ValueOutput output,CallbackInfo ci){if(combat$arena!=null)output.putString("kingdomscombat_arena_receipt",combat$arena.toString());if(combat$receipt!=null)output.putString("kingdomscombat_logout_receipt",combat$receipt.toString());if(combat$eventReceipt!=null)output.putString("kingdomscombat_event_receipt",combat$eventReceipt.toString());}
 }

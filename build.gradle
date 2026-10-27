@@ -1,5 +1,5 @@
 plugins { id 'net.fabricmc.fabric-loom' version '1.16.3' }
-version = '1.2.1'
+version = '1.3.0'
 group = 'com.celik.kingdomscombat'
 base { archivesName = 'kingdoms-combat' }
 repositories { mavenCentral() }
@@ -10,6 +10,7 @@ dependencies {
     compileOnly fileTree('libs') { include '*.jar' }
     compileOnly fileTree('libs/huskhomes-api') { include '*.jar' }
     runtimeOnly fileTree('libs') { include '*.jar'; exclude 'huskhomes-fabric-26.2.jar' }
+    testImplementation files('libs/voicechat-fabric-2.6.22+26.2.jar')
     testImplementation 'org.junit.jupiter:junit-jupiter:5.12.2'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }

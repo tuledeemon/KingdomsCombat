@@ -103,6 +103,7 @@ public final class HostedEvents {
     }
     public void setDescription(CommandSourceStack source,String description){require(source);description=description.trim();if(description.isBlank()||description.length()>service.config.eventDescriptionMaxLength)throw new IllegalArgumentException("Use a description of 1–"+service.config.eventDescriptionMaxLength+" characters.");state.description=description;if(state.event!=null)state.event.description=description;save();}
     public void menu(ServerPlayer player){
+        if(service.arenas.active()){service.arenas.menu(player);return;}
         if(!active())throw new IllegalArgumentException("No hosted event is active.");
         var event=state.event;var color=service.config.eventColor;
         List<net.minecraft.server.dialog.body.DialogBody> body=new java.util.ArrayList<>(List.of(new PlainMessage(CombatService.text(event.description,"gray"),300),new PlainMessage(CombatService.text("Duration: "+Ui.clock(event.endsAt-event.startedAt)+" • Remaining: "+Ui.clock(remainingMillis()),color),300),new PlainMessage(CombatService.text("Host: "+event.host,color),300)));

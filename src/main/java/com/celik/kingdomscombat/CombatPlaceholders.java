@@ -11,6 +11,9 @@ public final class CombatPlaceholders {
     private static <T>T query(ServerPlayer p,Function<ServerPlayer,T> fn,T fallback){var s=KingdomsCombat.service;if(s==null||s.stopping)return fallback;return s.server.isSameThread()?fn.apply(p):s.server.submit(()->fn.apply(p)).join();}
     private static void value(String key,Function<ServerPlayer,String> fn){Placeholders.registerServer(Identifier.parse("kingdomscombat:"+key),(context,arg)->PlaceholderResult.value(context.hasServerPlayer()?query(context.serverPlayer(),fn,""):""));}
     public static void register(){
+        value("elo",p->Integer.toString(KingdomsCombat.service.arenas.rating(p.getUUID()).elo));
+        value("arena_fighting",p->Boolean.toString(KingdomsCombat.service.arenas.fighter(p.getUUID())));
+        value("tournament_name",p->KingdomsCombat.service.arenas.data.event==null?Ui.caps("none"):Ui.caps(KingdomsCombat.service.arenas.data.event.name));
         value("tagged",p->Boolean.toString(status(p).active()));
         value("combat_tagged",p->Boolean.toString(status(p).combatMillis()>0));
         value("remaining",p->Integer.toString(status(p).seconds()));

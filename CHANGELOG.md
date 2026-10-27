@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.3.0
+
+- Add one protected event-arena cuboid with two opposing spawns, admin-saved inventory/armor kit and individually selected gate blocks. Keep gates closed during preparation, open them at fight start and restore terrain/gates afterward.
+- Add direct 1v1s and single-elimination 1v1/2v2 tournaments. Doubles use captain invitations with teammate acceptance. Copy each applicant's banner color/patterns onto their kit shield.
+- Keep the earliest power-of-two number of complete applications; exclude latest excess entries without byes. Preserve ordered applications and manual opening pairs; auto-pair the remaining teams and advance winners.
+- Grant build/PvP permissions only to the current non-eliminated fighters; protect waiting entrants, spectators and the arena against interference. Block storage access, kit drops and item pickups; retire temporary projectiles after their match, including after chunk reload/restart.
+- Save original inventory/components, equipment, XP, effects, food, health and location before kits. Intercept lethal arena damage without drops, restore eliminated players immediately, retain recovery backups until native player data confirms the receipt, and recover offline/unloaded-chunk returns with bounded tickets.
+- Treat a current fighter's disconnect as a side forfeit. Preserve ordinary combat-log behavior outside the arena. Void interrupted matches on restart, restore originals and pause the preserved bracket.
+- Persist one shared individual Elo ladder for singles/doubles; average team ratings for doubles. Expose Elo, current-fighter and tournament-name placeholders; add menus, input dialogs, titles, boss bars and configurable limits/timers.
+- Add optional Simple Voice Chat microphone and outgoing-audio hooks. Staff mutes block speech globally; arena spectators cannot send/receive voice. Publish immutable thread-safe policy snapshots without querying worlds from the voice thread.
+
 ## 1.2.1
 
 - Run combat-log death at the start of vanilla server-side disconnect, before the player save/removal. Remove the network-event callback that could race logout.

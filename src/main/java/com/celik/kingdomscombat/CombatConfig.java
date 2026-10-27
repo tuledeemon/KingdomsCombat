@@ -4,6 +4,11 @@ import java.util.*;
 
 public final class CombatConfig {
     public boolean enabled=true;
+    public boolean arenaEnabled=true,arenaBuildAllowed=true,arenaVoiceRestricted=true,staffMuteVoice=true,arenaAutoNext=true;
+    public int arenaCountdownSeconds=10,arenaBetweenMatchesSeconds=15,arenaMaxFightSeconds=600;
+    public int arenaMaxTeams=64,arenaMaxGates=512,arenaMaxChangedBlocks=4096,arenaMaxRegionVolume=4000000,arenaMaxRegionChunks=256;
+    public int arenaEloStart=1000,arenaEloK=32,arenaEloScale=400;
+    public List<String> arenaAllowedCommands=new ArrayList<>(List.of("event","tournament","combat","msg","tell","reply","r"));
     public int durationSeconds=20, warLockSeconds=20, airDropLockSeconds=20;
     public int pollTicks=5, actionBarIntervalTicks=20, saveIntervalSeconds=5;
     public boolean tagAttacker=true, tagVictim=true, tagBlockedHits=true;
@@ -45,6 +50,8 @@ public final class CombatConfig {
     public List<String> blockedCommands=new ArrayList<>(List.of("home","phome","publichome","warp","spawn","tp","teleport","tpo","tphere","tpoffline","tpall","tpa","tpahere","tpaall","tpaccept","tpyes","rtp","back","hub","lobby","server"));
     public List<String> mutedCommands=new ArrayList<>(List.of("me","say","tell","msg","w","teammsg","tm","whisper","message","reply","r"));
     public void validate(){
+        if(arenaCountdownSeconds<3||arenaCountdownSeconds>120||arenaBetweenMatchesSeconds<1||arenaBetweenMatchesSeconds>600||arenaMaxFightSeconds<10||arenaMaxFightSeconds>7200||arenaMaxTeams<2||arenaMaxTeams>256||arenaMaxGates<1||arenaMaxGates>4096||arenaMaxChangedBlocks<1||arenaMaxChangedBlocks>100000||arenaMaxRegionVolume<1||arenaMaxRegionVolume>16000000||arenaMaxRegionChunks<1||arenaMaxRegionChunks>1024||arenaEloStart<0||arenaEloStart>100000||arenaEloK<1||arenaEloK>1000||arenaEloScale<1||arenaEloScale>10000)throw new IllegalArgumentException("Invalid arena settings.");
+        if(arenaAllowedCommands==null||arenaAllowedCommands.size()>128||arenaAllowedCommands.stream().anyMatch(v->v==null||v.isBlank()||v.length()>128))throw new IllegalArgumentException("Invalid arena command list.");
         if(mutedCommands==null||mutedCommands.size()>512||mutedCommands.stream().anyMatch(s->s==null||s.isBlank()||s.length()>256))throw new IllegalArgumentException("Invalid muted command list.");
         if(staffToolPermissionPrefix==null||!staffToolPermissionPrefix.matches("[a-z0-9_.-]{1,100}\\."))throw new IllegalArgumentException("Invalid staff tool permission prefix.");
         if(staffDefaultGroup==null||!staffDefaultGroup.matches("[a-z0-9_-]{1,64}"))throw new IllegalArgumentException("Invalid staff default group.");
