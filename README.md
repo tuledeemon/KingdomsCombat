@@ -4,6 +4,8 @@ A separate **server-only Fabric 26.2 addon** for [Kingdoms](https://github.com/t
 
 **No client mod or resource pack is needed.** Custom menus, messages, titles and the countdown use Kingdoms' small-caps style.
 
+**1.3.3:** Banner customization only decorates existing kit shields in place, preserving enchantments, damage and other properties. Kits without shields never receive one.
+
 **1.3.2:** Arena water/lava flow and reset, public viewing-area teleport through `/event`, spectators hearing staff voice while muted, and automatic floor/headroom protection for current-fighter mining.
 
 **1.3.1:** Banners are optional for solo and team applications. A held banner customizes the shield; otherwise the configured kit is unchanged.

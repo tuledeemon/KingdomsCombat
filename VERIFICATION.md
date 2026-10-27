@@ -1,4 +1,8 @@
-# Release verification — 1.3.2
+# Release verification — 1.3.3
+
+79 unit tests and 244 dedicated-server checks passed. Native match preparation verifies that shield-free kits do not gain a shield or lose another offhand item; existing hotbar/main-hand/offhand shields retain Unbreaking, Mending, damage and custom names while receiving the banner color. The unchanged no-banner kit and other arena/recovery checks continue passing. No graphical client or production server was used.
+
+## Previous release — 1.3.2
 
 **79 unit tests and 241 dedicated-server checks passed**, running KingdomsCombat 1.3.2 with Kingdoms 1.12.2 and the existing C2ME/Voice Chat/HuskHomes environment. No graphical client, live microphone or production server was used.
 

@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.3.3
+
+- Decorate existing kit shields in their original inventory slots instead of creating/replacing an offhand shield. Preserve enchantments, damage, names and all other non-banner components. Clear previous patterns when using a plain banner.
+- Verify shield-free kits, enchanted/damaged shields and main-hand/offhand slot preservation through match preparation. Update menus and guide.
+
 ## 1.3.2
 
 - Allow water/lava flow inside the arena, journal affected blocks and prevent flows across its boundary. Add `arenaFluidFlow`.
