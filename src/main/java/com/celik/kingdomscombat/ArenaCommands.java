@@ -38,7 +38,10 @@ public final class ArenaCommands {
         var gate=literal("gate");for(boolean add:new boolean[]{true,false})gate.then(literal(add?"add":"remove").executes(c->run(c,true,()->s().gate(actor(c),add))));arena.then(gate);host.then(arena);
         host.then(literal("duel").then(argument("first",EntityArgument.player()).then(argument("second",EntityArgument.player()).executes(c->run(c,false,()->s().duel(p(c,"first"),p(c,"second")))))));
         var tournament=literal("tournament").executes(c->run(c,false,()->ArenaUi.admin(s(),actor(c))));
-        tournament.then(literal("open").then(argument("format",StringArgumentType.word()).suggests((c,b)->SharedSuggestionProvider.suggest(List.of("1v1","2v2"),b)).then(argument("name",StringArgumentType.string()).executes(c->run(c,false,()->{String format=StringArgumentType.getString(c,"format");ArenaService.require(format.equals("1v1")||format.equals("2v2"),"Choose 1v1 or 2v2.");s().open(StringArgumentType.getString(c,"name"),format.equals("1v1")?1:2);})))));
+        var name=argument("name",StringArgumentType.string()).executes(c->run(c,false,()->open(c,null)));
+        name.then(argument("gear",StringArgumentType.word()).suggests((c,b)->SharedSuggestionProvider.suggest(List.of("own","kit"),b)).executes(c->run(c,false,()->open(c,gear(StringArgumentType.getString(c,"gear"))))));
+        tournament.then(literal("open").then(argument("format",StringArgumentType.word()).suggests((c,b)->SharedSuggestionProvider.suggest(List.of("1v1","2v2"),b)).then(name)));
+        tournament.then(literal("gear").then(argument("mode",StringArgumentType.word()).suggests((c,b)->SharedSuggestionProvider.suggest(List.of("own","kit"),b)).executes(c->run(c,false,()->s().setGear(gear(StringArgumentType.getString(c,"mode")))))));
         tournament.then(literal("add").then(argument("captain",EntityArgument.player()).executes(c->run(c,false,()->s().add(List.of(p(c,"captain"))))).then(argument("teammate",EntityArgument.player()).executes(c->run(c,false,()->s().add(List.of(p(c,"captain"),p(c,"teammate"))))))));
         tournament.then(literal("remove").then(argument("player",StringArgumentType.word()).executes(c->run(c,false,()->s().remove(KingdomsCombat.service.staff.target(StringArgumentType.getString(c,"player")))))));
         tournament.then(literal("bracket").then(argument("first",EntityArgument.player()).then(argument("second",EntityArgument.player()).executes(c->run(c,false,()->s().bracket(p(c,"first").getUUID(),p(c,"second").getUUID()))))));
@@ -48,5 +51,7 @@ public final class ArenaCommands {
         tournament.then(literal("winner").then(argument("captain",EntityArgument.player()).executes(c->run(c,false,()->s().finish(p(c,"captain").getUUID())))));
         host.then(tournament);
     }
+    private static boolean gear(String mode){ArenaService.require(mode.equals("own")||mode.equals("kit"),"Choose own or kit.");return mode.equals("own");}
+    private static void open(CommandContext<CommandSourceStack> c,Boolean own){String format=StringArgumentType.getString(c,"format");ArenaService.require(format.equals("1v1")||format.equals("2v2"),"Choose 1v1 or 2v2.");if(own==null)s().open(StringArgumentType.getString(c,"name"),format.equals("1v1")?1:2);else s().open(StringArgumentType.getString(c,"name"),format.equals("1v1")?1:2,own);}
     private ArenaCommands(){}
 }

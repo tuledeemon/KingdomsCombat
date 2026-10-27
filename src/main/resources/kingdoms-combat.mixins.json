@@ -17,6 +17,7 @@
     "StaffNetworkMixin",
     "StaffTeleportMixin",
     "ArenaProtectionMixin",
+    "ArenaArtifactsAccessor",
     "ArenaClaimMixin",
     "ArenaPlayerMixin",
     "ArenaServerPlayerMixin",

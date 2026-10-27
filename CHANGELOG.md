@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.3.4
+
+- Add persisted own-gear and admin-kit modes for tournaments and duels, selectable by host command/menu before a bracket starts. Own gear does not require a saved kit.
+- Back up complete inventories before personal gear enters the arena; restore original components, durability and consumable counts afterward. Artifacts are usable; their original records, charges and abilities restore even after breaking. Fixers and core tokens remain safely backed up outside the fight.
+- Reset effects, fire, freezing, health, food, saturation and exhaustion during preparation and again immediately before gates open.
+- Block private event-chest access while arena inventory recovery is pending, preventing stored arena gear from escaping restoration.
+
 ## 1.3.3
 
 - Decorate existing kit shields in their original inventory slots instead of creating/replacing an offhand shield. Preserve enchantments, damage, names and all other non-banner components. Clear previous patterns when using a plain banner.

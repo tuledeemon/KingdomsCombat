@@ -20,6 +20,7 @@ public final class ArenaRules {
     public static final class Setup {
         public Point corner1,corner2,spawn1,spawn2,teleportSpot;
         public int regionPadding;
+        public boolean useOwnGear;
         public Region region;
         public List<String> kit=new ArrayList<>();
         public List<Gate> gates=new ArrayList<>();
@@ -44,7 +45,7 @@ public final class ArenaRules {
         public List<UUID> roundWinners=new ArrayList<>();
         public Map<UUID,UUID> invitations=new HashMap<>();
         public UUID champion;
-        public boolean paused;
+        public boolean paused,useOwnGear;
         public long nextAt;
     }
     public static final class Match {
@@ -59,6 +60,7 @@ public final class ArenaRules {
         public UUID receipt=UUID.randomUUID(),match;
         public Point origin;
         public List<String> items=new ArrayList<>(),effects=new ArrayList<>();
+        public Map<UUID,String> artifacts=new HashMap<>();
         public String food,mode;
         public float health,absorption,xpProgress;
         public int xpLevel,xpTotal,selected,fire,air;

@@ -1,4 +1,8 @@
-# Release verification — 1.3.3
+# Release verification — 1.3.4
+
+80 unit tests and 255 dedicated-server checks passed with Kingdoms 1.12.2. Own-gear match preparation runs without a saved kit, preserves personal weapon wear and stack counts, allows authenticated artifacts with saved record recovery, blocks event-chest exports and locks gear changes after start. Native gate opening clears countdown effects and resets health, food, saturation and exhaustion. Match completion restores original supplies, health and authenticated artifact data, including a retired/broken artifact and spent Guardian Angel charges. Saved gear modes round-trip through legacy defaults and persistence. No graphical client or production server was used.
+
+## Previous release — 1.3.3
 
 79 unit tests and 244 dedicated-server checks passed. Native match preparation verifies that shield-free kits do not gain a shield or lose another offhand item; existing hotbar/main-hand/offhand shields retain Unbreaking, Mending, damage and custom names while receiving the banner color. The unchanged no-banner kit and other arena/recovery checks continue passing. No graphical client or production server was used.
 

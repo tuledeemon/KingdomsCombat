@@ -16,10 +16,10 @@ final class ArenaUi {
     static void player(ArenaService s,ServerPlayer p){Ui.open(p,"Tournaments & duels",m->{
         var e=s.data.event;var r=s.rating(p.getUUID());
         m.button(4,Items.GOLD_INGOT,"Your Elo: "+r.elo,List.of("Shared 1v1 / 2v2 ladder",r.wins+" wins • "+r.losses+" losses"),null);
-        m.button(13,Items.IRON_SWORD,e==null?"No tournament":e.name,List.of(e==null?"Staff can open applications":e.phase+" • "+e.teamSize+"v"+e.teamSize,e==null?"":e.entries.size()+" complete entries","Only current fighters can build or PvP"),null);
+        m.button(13,Items.IRON_SWORD,e==null?"No tournament":e.name,List.of(e==null?"Staff can open applications":e.phase+" • "+e.teamSize+"v"+e.teamSize,e==null?"":e.entries.size()+" complete entries",e!=null&&e.useOwnGear?"Bring your own gear • saved and restored":"Admin kit • original items backed up","Only current fighters can build or PvP",e!=null&&e.useOwnGear?"Artifacts are usable • saved and restored":"Original gear returns after the round"),null);
         if(s.active()&&e.phase==ArenaRules.Phase.APPLICATIONS){
-            if(e.teamSize==1)m.button(28,Items.BANNER.white(),"Apply",List.of("Optional: banner existing kit shields","Without a banner, use the normal kit","Latest excess entries are excluded"),()->{s.apply(p);player(s,p);});
-            else{m.button(28,Items.BANNER.white(),"Invite a teammate",List.of("Banners are optional for both players","Teammate must accept"),()->input(p,"Invite teammate","Player name","/tournament invite $(value)"));m.button(30,Items.DYE.lime(),"Accept team invitation",List.of("Optional: banner existing kit shields"),()->{s.accept(p);player(s,p);});}
+            if(e.teamSize==1)m.button(28,Items.BANNER.white(),"Apply",List.of("Optional: banner existing shields","Without a banner, keep the chosen loadout","Latest excess entries are excluded"),()->{s.apply(p);player(s,p);});
+            else{m.button(28,Items.BANNER.white(),"Invite a teammate",List.of("Banners are optional for both players","Teammate must accept"),()->input(p,"Invite teammate","Player name","/tournament invite $(value)"));m.button(30,Items.DYE.lime(),"Accept team invitation",List.of("Optional: banner existing shields"),()->{s.accept(p);player(s,p);});}
         }
         if(s.active())m.button(22,Items.ENDER_PEARL,"Teleport to arena",List.of(s.data.setup.teleportSpot==null?"Staff have not set a destination":"Visit the arena viewing area","Combat, war and AirDrop locks still apply"),s.data.setup.teleportSpot==null?null:()->s.travel(p,e.id));
         m.button(37,Items.NAME_TAG,"Applicants",List.of("Application order and complete teams"),()->entries(s,p,0));
@@ -49,6 +49,7 @@ final class ArenaUi {
         m.button(29,Items.CLOCK,"Next / replay match",List.of("Use after a pause or timeout"),()->{ArenaCommands.require(p.createCommandSourceStack(),false);s.next();admin(s,p);});
         m.button(30,Items.NAME_TAG,"Pick fighters / add team",List.of("One player for 1v1; two for 2v2"),()->players(p,"Add tournament entry","/eventhost tournament add $(first) $(second)"));
         m.button(32,Items.PAPER,"Set manual opening pair",List.of("Enter two registered captain names","Unpaired entries are matched automatically"),()->players(p,"Manual bracket","/eventhost tournament bracket $(first) $(second)"));
+        if(!s.active()||s.data.event.phase==ArenaRules.Phase.APPLICATIONS){boolean own=s.active()?s.data.event.useOwnGear:s.data.setup.useOwnGear;m.button(24,Items.ARMOR_STAND,"Gear: "+(own?"Your own gear":"Admin kit"),List.of("Click to switch before the tournament starts","Personal gear is saved and restored","Artifacts and personal gear restore afterward"),()->{ArenaCommands.require(p.createCommandSourceStack(),false);s.setGear(!own);admin(s,p);});}
         m.button(25,Items.NETHERITE_SWORD,"Host a 1v1",List.of("Select two online fighters"),()->players(p,"Select duel fighters","/eventhost duel $(first) $(second)"));
         m.button(31,Items.WRITABLE_BOOK,"Bracket",List.of(),()->brackets(s,p,0));
         m.button(34,Items.BARRIER,"Stop tournament",List.of("Restore all original inventories","No Elo for an unfinished match"),()->Ui.confirm(p,"Stop tournament",List.of("Current match will be voided"),()->{ArenaCommands.require(p.createCommandSourceStack(),false);s.cancel();admin(s,p);}));

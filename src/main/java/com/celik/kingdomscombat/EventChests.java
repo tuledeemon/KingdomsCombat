@@ -103,6 +103,7 @@ public final class EventChests {
         try{open(player);}catch(Exception e){tell(player,e.getMessage(),true);}return true;
     }
     public void open(ServerPlayer player){
+        if(service.arenas!=null&&service.arenas.reserved(player.getUUID()))throw new IllegalArgumentException("Finish your arena match before opening event storage.");
         check();if(service.staff.frozen(player.getUUID())||player.isSpectator()||!player.isAlive())throw new IllegalArgumentException("You cannot use this chest right now.");
         if(!player.containerMenu.getCarried().isEmpty())throw new IllegalArgumentException("Put the item on your cursor away first.");
         Account saved=data.accounts.get(player.getUUID());UUID event=service.events.id();
