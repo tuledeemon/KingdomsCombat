@@ -21,6 +21,7 @@ final class ArenaUi {
             if(e.teamSize==1)m.button(28,Items.BANNER.white(),"Apply",List.of("Optional: hold a banner to customize your shield","Without a banner, use the normal kit","Latest excess entries are excluded"),()->{s.apply(p);player(s,p);});
             else{m.button(28,Items.BANNER.white(),"Invite a teammate",List.of("Banners are optional for both players","Teammate must accept"),()->input(p,"Invite teammate","Player name","/tournament invite $(value)"));m.button(30,Items.DYE.lime(),"Accept team invitation",List.of("Optional: hold a banner to customize your shield"),()->{s.accept(p);player(s,p);});}
         }
+        if(s.active())m.button(22,Items.ENDER_PEARL,"Teleport to arena",List.of(s.data.setup.teleportSpot==null?"Staff have not set a destination":"Visit the arena viewing area","Combat, war and AirDrop locks still apply"),s.data.setup.teleportSpot==null?null:()->s.travel(p,e.id));
         m.button(37,Items.NAME_TAG,"Applicants",List.of("Application order and complete teams"),()->entries(s,p,0));
         m.button(32,Items.WRITABLE_BOOK,"Brackets",List.of("Current match and waiting pairs"),()->brackets(s,p,0));
         m.button(34,Items.GOLD_BLOCK,"Elo leaderboard",List.of("One ladder for duels and doubles"),()->leaderboard(s,p));
@@ -38,6 +39,7 @@ final class ArenaUi {
         m.button(14,Items.WOOL.blue(),"Team 1 spawn",List.of("Current position and facing"),()->{ArenaCommands.require(p.createCommandSourceStack(),true);s.spawn(p,1);admin(s,p);});
         m.button(15,Items.WOOL.red(),"Team 2 spawn",List.of("Current position and facing"),()->{ArenaCommands.require(p.createCommandSourceStack(),true);s.spawn(p,2);admin(s,p);});
         m.button(16,Items.CHEST,"Save kit",List.of("Copies your inventory, armor and offhand","Tracked artifacts and storage items are rejected"),()->{ArenaCommands.require(p.createCommandSourceStack(),true);s.kit(p);admin(s,p);});
+        m.button(21,Items.ENDER_PEARL,"Set public teleport spot",List.of("Use your current position","Choose safe spectator ground"),()->{ArenaCommands.require(p.createCommandSourceStack(),true);s.setLocation(p);admin(s,p);});
         m.button(19,Items.IRON_BARS,"Add gate block",List.of("Look at a block within six blocks",s.data.setup.gates.size()+" saved gate blocks","Gates open when the countdown ends"),()->{ArenaCommands.require(p.createCommandSourceStack(),true);s.gate(p,true);admin(s,p);});
         m.button(20,Items.SHEARS,"Remove gate block",List.of("Look at a saved gate block"),()->{ArenaCommands.require(p.createCommandSourceStack(),true);s.gate(p,false);admin(s,p);});
         }

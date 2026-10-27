@@ -4,6 +4,8 @@ A separate **server-only Fabric 26.2 addon** for [Kingdoms](https://github.com/t
 
 **No client mod or resource pack is needed.** Custom menus, messages, titles and the countdown use Kingdoms' small-caps style.
 
+**1.3.2:** Arena water/lava flow and reset, public viewing-area teleport through `/event`, spectators hearing staff voice while muted, and automatic floor/headroom protection for current-fighter mining.
+
 **1.3.1:** Banners are optional for solo and team applications. A held banner customizes the shield; otherwise the configured kit is unchanged.
 
 **1.3.0:** Hosted duels and 1v1/2v2 single-elimination tournaments: arena claims, two spawns, gates, saved kits, banner shields, manual/automatic opening brackets and shared Elo. Only current fighters get arena permissions. Original inventories restore after defeat, logout or restart. Optional Simple Voice Chat honors staff mutes and arena restrictions. [Setup and commands](TOURNAMENTS_GUIDE.md).

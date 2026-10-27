@@ -18,6 +18,8 @@ public abstract class ArenaProtectionMixin {
     private static void pvp(Entity target,DamageSource source,CallbackInfoReturnable<Boolean> cir){var service=KingdomsCombat.service;if(service!=null&&service.arenas!=null){Boolean allowed=service.arenas.pvp(target,source);if(allowed!=null)cir.setReturnValue(allowed);}}
     @Inject(method="mutation",at=@At("HEAD"),cancellable=true)
     private static void blocks(Level level,BlockPos pos,BlockState state,CallbackInfoReturnable<Boolean> cir){var service=KingdomsCombat.service;if(service!=null&&service.arenas!=null&&!service.arenas.mutation(level,pos,state))cir.setReturnValue(false);}
+    @Inject(method="fluid",at=@At("HEAD"),cancellable=true)
+    private static void fluid(Level level,BlockPos from,BlockPos to,CallbackInfoReturnable<Boolean> cir){var service=KingdomsCombat.service;if(service!=null&&service.arenas!=null&&!service.arenas.fluid(level,from,to))cir.setReturnValue(false);}
     @Inject(method="explosion",at=@At("HEAD"),cancellable=true)
     private static void explosion(Level level,BlockPos origin,BlockPos target,java.util.UUID actor,CallbackInfoReturnable<Boolean> cir){var service=KingdomsCombat.service;if(service!=null&&service.arenas!=null&&service.arenas.inside(level,target))cir.setReturnValue(false);}
     @Inject(method="admitSpawn",at=@At("HEAD"),cancellable=true)

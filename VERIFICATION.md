@@ -1,4 +1,13 @@
-# Release verification — 1.3.1
+# Release verification — 1.3.2
+
+**79 unit tests and 241 dedicated-server checks passed**, running KingdomsCombat 1.3.2 with Kingdoms 1.12.2 and the existing C2ME/Voice Chat/HuskHomes environment. No graphical client, live microphone or production server was used.
+
+- Native water and lava ticks flow inside the arena and their sources/spread reset after the match. Boundary decisions reject incoming and outgoing fluid flow.
+- Native block destruction, mining actions and mining the floor under standing-height selections succeed for current fighters. Existing selections migrate their floor/headroom padding once.
+- A live-tick public arena arrival loads the configured destination, keeps spectators outside the match roster and respects combat tags. Ordinary direct arrivals remain blocked.
+- Voice API tests allow staff audio to restricted spectators while blocking spectator microphones, non-staff audio and muted staff speech.
+
+## Previous release — 1.3.1
 
 **77 unit tests and 231 dedicated-server checks passed.** Additional native checks verify solo applications without banners, unchanged default kit shields and doubles invitation/acceptance with neither player holding a banner. Existing banner customization, arena combat, inventory recovery, Elo, voice hooks and live-tick loading/return checks continue passing. No graphical client or production server was used.
 

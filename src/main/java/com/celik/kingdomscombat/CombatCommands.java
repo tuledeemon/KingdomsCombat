@@ -30,7 +30,7 @@ public final class CombatCommands {
         var event=literal("eventhost").requires(source->CombatService.allowed(source,KingdomsCombat.service==null?"kingdomscombat.eventhost":s().config.eventHostPermission,KingdomsCombat.service==null?2:s().config.adminLevel));
         event.executes(c->run(c,()->reply(c,s().events.description())));
         event.then(literal("stop").executes(c->run(c,()->{if(s().arenas.active())s().arenas.cancel();else s().events.stop(c.getSource());})));
-        event.then(literal("setlocation").executes(c->run(c,()->{s().events.setLocation(c.getSource());reply(c,"Event location set to your position.");})));
+        event.then(literal("setlocation").executes(c->run(c,()->{if(s().arenas.active()){ArenaCommands.require(c.getSource(),true);s().arenas.setLocation(c.getSource().getPlayerOrException());}else s().events.setLocation(c.getSource());reply(c,"Event location set to your position.");})));
         event.then(literal("description").then(argument("text",StringArgumentType.greedyString()).executes(c->run(c,()->{s().events.setDescription(c.getSource(),StringArgumentType.getString(c,"text"));reply(c,"Event description saved.");}))));
         var chest=literal("chest").executes(c->run(c,()->{if(c.getSource().getPlayer()!=null)s().events.chests.settings(c.getSource().getPlayer());else reply(c,s().events.chests.status());}));
         chest.then(literal("set").executes(c->run(c,()->{s().events.chests.setChest(c.getSource());reply(c,"Event input chest selected.");})));

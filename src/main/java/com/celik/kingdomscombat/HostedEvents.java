@@ -113,7 +113,7 @@ public final class HostedEvents {
         var close=new ActionButton(new CommonButtonData(CombatService.text("Close","gray"),100),Optional.empty());
         player.closeContainer();player.openDialog(Holder.direct(new MultiActionDialog(common,List.of(teleport),Optional.of(close),1)));
     }
-    public void travel(ServerPlayer player,UUID eventId){if(!active()||!state.event.id.equals(eventId))throw new IllegalArgumentException("This event is no longer active. Open /event again.");travel(player);}
+    public void travel(ServerPlayer player,UUID eventId){if(service.arenas.active()&&service.arenas.data.event.id.equals(eventId)){service.arenas.travel(player,eventId);return;}if(!active()||!state.event.id.equals(eventId))throw new IllegalArgumentException("This event is no longer active. Open /event again.");travel(player);}
     public void travel(ServerPlayer player){
         if(!active())throw new IllegalArgumentException("No hosted event is active.");
         if(!service.allowTeleport(player,true))return;

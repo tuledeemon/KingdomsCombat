@@ -33,6 +33,7 @@ public final class ArenaCommands {
         arena.then(literal("claim").executes(c->run(c,true,()->s().claim())));
         arena.then(literal("unclaim").executes(c->run(c,true,()->s().unclaim())));
         arena.then(literal("spawn").then(argument("side",IntegerArgumentType.integer(1,2)).executes(c->run(c,true,()->s().spawn(actor(c),IntegerArgumentType.getInteger(c,"side"))))));
+        arena.then(literal("setlocation").executes(c->run(c,true,()->s().setLocation(actor(c)))));
         arena.then(literal("kit").executes(c->run(c,true,()->s().kit(actor(c)))));
         var gate=literal("gate");for(boolean add:new boolean[]{true,false})gate.then(literal(add?"add":"remove").executes(c->run(c,true,()->s().gate(actor(c),add))));arena.then(gate);host.then(arena);
         host.then(literal("duel").then(argument("first",EntityArgument.player()).then(argument("second",EntityArgument.player()).executes(c->run(c,false,()->s().duel(p(c,"first"),p(c,"second")))))));

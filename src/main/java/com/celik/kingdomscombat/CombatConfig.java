@@ -4,7 +4,7 @@ import java.util.*;
 
 public final class CombatConfig {
     public boolean enabled=true;
-    public boolean arenaEnabled=true,arenaBuildAllowed=true,arenaVoiceRestricted=true,staffMuteVoice=true,arenaAutoNext=true;
+    public boolean arenaEnabled=true,arenaBuildAllowed=true,arenaVoiceRestricted=true,staffMuteVoice=true,arenaAutoNext=true,arenaFluidFlow=true,arenaSpectatorsHearStaff=true;
     public int arenaCountdownSeconds=10,arenaBetweenMatchesSeconds=15,arenaMaxFightSeconds=600;
     public int arenaMaxTeams=64,arenaMaxGates=512,arenaMaxChangedBlocks=4096,arenaMaxRegionVolume=4000000,arenaMaxRegionChunks=256;
     public int arenaEloStart=1000,arenaEloK=32,arenaEloScale=400;

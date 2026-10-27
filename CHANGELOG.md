@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.3.2
+
+- Allow water/lava flow inside the arena, journal affected blocks and prevent flows across its boundary. Add `arenaFluidFlow`.
+- Include the floor below selected corners and headroom above them; migrate existing selections once. Verify ordinary destruction, mining actions and arena-floor mining for current fighters.
+- Add `/eventhost arena setlocation` and an arena-menu destination option. `/event` offers a public arena teleport without fighter permissions; recheck combat/war/AirDrop/freeze locks and load destination chunks with temporary tickets.
+- Let restricted arena spectators hear staff/event hosts while their microphones remain blocked. Add `arenaSpectatorsHearStaff`; moderation mutes still override speech.
+
 ## 1.3.1
 
 - Allow solo applications and 2v2 captain invitations/acceptances without banners. Preserve optional held-banner shield customization; leave the saved admin kit unchanged without a banner. Update menus, notices and guide.

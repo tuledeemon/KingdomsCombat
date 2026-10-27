@@ -43,9 +43,12 @@ public final class ArenaService {
     private final Set<UUID> restoring=new HashSet<>();
     private final Set<ChunkPos> tickets=new HashSet<>();
     private ServerLevel ticketLevel;
+    private record Arrival(UUID player,UUID event,Point point,long expires){}
+    private final Map<UUID,Arrival> arrivals=new HashMap<>();
+    private Arrival authorizedArrival;
     private final ServerBossEvent bar=new ServerBossEvent(UUID.randomUUID(),CombatService.text("Tournament","gold"),BossEvent.BossBarColor.YELLOW,BossEvent.BossBarOverlay.PROGRESS);
     public ArenaService(CombatService service){
-        this.service=service;file=service.stateFile.resolveSibling("arena.json");data=CombatStore.read(file,Data.class,new Data());ArenaRules.validate(data);
+        this.service=service;file=service.stateFile.resolveSibling("arena.json");data=CombatStore.read(file,Data.class,new Data());ArenaRules.validate(data);padRegion();
         // A restart voids only the interrupted match, not its bracket or any original inventory.
         if(data.match!=null){data.match=null;if(data.event!=null)data.event.paused=true;}
         for(Snapshot snapshot:data.snapshots.values())snapshot.restoring=true;
@@ -74,20 +77,19 @@ public final class ArenaService {
         // Staff may moderate spectators, but never damage an official fighter or affect Elo.
         return !reserved(victim.getUUID())&&!reserved(attacker.getUUID())&&admin(victim)&&admin(attacker);
     }
+    private void padRegion(){Region r=data.setup.region;if(r==null||data.setup.regionPadding>=1)return;ServerLevel level=level(r.dimension);r.minY=Math.max(level.getMinY(),r.minY-1);r.maxY=Math.min(level.getMaxY()-1,r.maxY+2);data.setup.regionPadding=1;}
+    public boolean fluid(Level level,BlockPos from,BlockPos to){boolean a=inside(level,from),b=inside(level,to);return !a&&!b||a&&b&&service.config.arenaFluidFlow;}
+    private boolean remember(Level level,BlockPos pos){String key=pos.getX()+","+pos.getY()+","+pos.getZ();if(data.changedBlocks.containsKey(key))return true;if(data.changedBlocks.size()>=service.config.arenaMaxChangedBlocks)return false;data.changedBlocks.put(key,BlockState.CODEC.encodeStart(JsonOps.INSTANCE,level.getBlockState(pos)).getOrThrow().toString());try{save();return true;}catch(RuntimeException error){return false;}}
     public boolean mutation(Level level,BlockPos pos,BlockState next){
         var context=Protection.current();
         if(internal)return true;
         if(!inside(level,pos))return context==null||context.actor()==null||!reserved(context.actor());
+        BlockState old=level.getBlockState(pos);
+        if(context!=null&&context.level()==level&&(context.cause()==Protection.Cause.FLUID||context.cause()==Protection.Cause.BLOCK&&(!old.getFluidState().isEmpty()||!next.getFluidState().isEmpty()))){if(!fluid(level,context.origin(),pos)||old.hasBlockEntity()||next.hasBlockEntity())return old.equals(next);return data.match==null||remember(level,pos);}
         if(context==null||context.cause()!=Protection.Cause.PLAYER||!(context.entity() instanceof ServerPlayer actor)||!build(actor,level,pos))return level.getBlockState(pos).equals(next);
         if(!reserved(actor.getUUID()))return true;
         if(level.getBlockEntity(pos)!=null||next.hasBlockEntity())return false;
-        String key=pos.getX()+","+pos.getY()+","+pos.getZ();
-        if(!data.changedBlocks.containsKey(key)){
-            if(data.changedBlocks.size()>=service.config.arenaMaxChangedBlocks)return false;
-            data.changedBlocks.put(key,BlockState.CODEC.encodeStart(JsonOps.INSTANCE,level.getBlockState(pos)).getOrThrow().toString());
-            try{save();}catch(RuntimeException e){return false;}
-        }
-        return true;
+        return remember(level,pos);
     }
     public boolean admit(Entity entity){
         var context=Protection.current();boolean kit=context!=null&&context.actor()!=null&&reserved(context.actor());
@@ -105,11 +107,11 @@ public final class ArenaService {
     public void corner(ServerPlayer p,int number){idle();if(number==1)data.setup.corner1=point(p);else data.setup.corner2=point(p);save();}
     public void claim(){
         idle();Point a=data.setup.corner1,b=data.setup.corner2;require(a!=null&&b!=null&&a.dimension.equals(b.dimension),"Select two corners in the same dimension.");
-        Region region=new Region();region.dimension=a.dimension;region.minX=(int)Math.floor(Math.min(a.x,b.x));region.maxX=(int)Math.floor(Math.max(a.x,b.x));region.minY=(int)Math.floor(Math.min(a.y,b.y));region.maxY=(int)Math.floor(Math.max(a.y,b.y));region.minZ=(int)Math.floor(Math.min(a.z,b.z));region.maxZ=(int)Math.floor(Math.max(a.z,b.z));
+        Region region=new Region();region.dimension=a.dimension;region.minX=(int)Math.floor(Math.min(a.x,b.x));region.maxX=(int)Math.floor(Math.max(a.x,b.x));region.minY=Math.max(level(a.dimension).getMinY(),(int)Math.floor(Math.min(a.y,b.y))-1);region.maxY=Math.min(level(a.dimension).getMaxY()-1,(int)Math.floor(Math.max(a.y,b.y))+2);region.minZ=(int)Math.floor(Math.min(a.z,b.z));region.maxZ=(int)Math.floor(Math.max(a.z,b.z));
         require(region.volume()<=service.config.arenaMaxRegionVolume,"Arena exceeds the configured block-volume cap.");
         require((long)((region.maxX>>4)-(region.minX>>4)+1)*((region.maxZ>>4)-(region.minZ>>4)+1)<=service.config.arenaMaxRegionChunks,"Arena exceeds the configured chunk cap.");
         require(region.minY>=level(a.dimension).getMinY()&&region.maxY<level(a.dimension).getMaxY(),"Arena corners are outside build height.");
-        wilderness(region);data.setup.region=region;data.setup.gates.clear();save();
+        wilderness(region);data.setup.region=region;data.setup.regionPadding=1;data.setup.gates.clear();save();
     }
     private void wilderness(Region region){
         var kingdoms=KingdomsMod.service;if(kingdoms==null)throw new IllegalArgumentException("Kingdoms is not ready.");ServerLevel level=level(region.dimension);
@@ -117,6 +119,12 @@ public final class ArenaService {
     }
     public void unclaim(){idle();data.setup.region=null;data.setup.gates.clear();save();}
     public void spawn(ServerPlayer p,int side){idle();require(inside(p.level(),p.blockPosition()),"Stand inside the claimed arena.");Point pos=point(p);if(side==1)data.setup.spawn1=pos;else data.setup.spawn2=pos;save();}
+    public void setLocation(ServerPlayer p){require(data.setup.region!=null,"Claim the arena first.");require(p.level().dimension().identifier().toString().equals(data.setup.region.dimension),"Set the arena destination in its own dimension.");data.setup.teleportSpot=point(p);save();}
+    public void travel(ServerPlayer p,UUID event){
+        require(active()&&data.event.id.equals(event),"This tournament is no longer active.");if(!service.allowTeleport(p,true))return;Point destination=data.setup.teleportSpot;require(destination!=null,"Staff have not set an arena teleport spot.");require(!arrivals.containsKey(p.getUUID()),"Your arena teleport is already loading.");ServerLevel target=level(destination.dimension);require(target.getWorldBorder().isWithinBounds(destination.x,destination.z),"Arena destination is outside the world border.");Arrival request=new Arrival(p.getUUID(),event,destination,service.now()+service.config.eventTeleportTimeoutSeconds*1000L);arrivals.put(p.getUUID(),request);ReturnSite site=new ReturnSite(target,new ChunkPos(((int)Math.floor(destination.x))>>4,((int)Math.floor(destination.z))>>4));returnTickets.merge(site,1,Integer::sum);
+        target.getChunkSource().addTicketAndLoadWithRadius(RETURN_TICKET,site.pos,2).orTimeout(service.config.eventTeleportTimeoutSeconds,java.util.concurrent.TimeUnit.SECONDS).whenComplete((v,error)->service.server.execute(()->{try{if(!arrivals.remove(p.getUUID(),request)||service.stopping||service.server.getPlayerList().getPlayer(p.getUUID())!=p)return;if(error!=null)throw new IllegalArgumentException("The arena destination could not be loaded.");require(active()&&data.event.id.equals(request.event)&&data.setup.teleportSpot==request.point&&service.now()<request.expires,"Arena teleport changed or expired. Open /event again.");if(!service.allowTeleport(p,true))return;BlockPos foot=BlockPos.containing(destination.x,destination.y,destination.z);require(target.getWorldBorder().isWithinBounds(destination.x,destination.z)&&target.getBlockState(foot).getCollisionShape(target,foot).isEmpty()&&target.getBlockState(foot.above()).getCollisionShape(target,foot.above()).isEmpty()&&target.getFluidState(foot).isEmpty()&&!target.getBlockState(foot.below()).getCollisionShape(target,foot.below()).isEmpty(),"The arena destination needs clear headroom and safe ground.");Arrival previous=authorizedArrival;authorizedArrival=request;try{p.closeContainer();if(p.teleportTo(target,destination.x,destination.y,destination.z,Set.of(),destination.yaw,destination.pitch,false))tell(p,"Joined the arena viewing area.");}finally{authorizedArrival=previous;}}catch(RuntimeException failure){tell(p,failure.getMessage()==null?"Arena teleport failed.":failure.getMessage());}finally{releaseReturn(site);}}));
+    }
+    private void releaseReturn(ReturnSite site){Integer count=returnTickets.get(site);if(count!=null&&count>1)returnTickets.put(site,count-1);else{returnTickets.remove(site);site.level.getChunkSource().removeTicketWithRadius(RETURN_TICKET,site.pos,2);}}
     public void kit(ServerPlayer p){idle();List<String> kit=new ArrayList<>();boolean any=false;for(int i=0;i<p.getInventory().getContainerSize();i++){ItemStack stack=p.getInventory().getItem(i);require(!Artifacts.marked(stack)&&!KingdomCores.isToken(stack)&&!Artifacts.fixerMarked(stack),"Unique tracked items cannot be copied into an arena kit.");require(!stack.has(DataComponents.CONTAINER)&&!stack.has(DataComponents.BUNDLE_CONTENTS),"Remove storage items from the kit template.");kit.add(encode(stack));any|=!stack.isEmpty();}require(any,"Equip the kit in your inventory and armor slots first.");data.setup.kit=kit;save();}
     public void gate(ServerPlayer p,boolean add){
         idle();HitResult hit=p.pick(6,0,false);require(hit instanceof BlockHitResult&&hit.getType()==HitResult.Type.BLOCK,"Look at a gate block within six blocks.");BlockPos pos=((BlockHitResult)hit).getBlockPos();require(inside(p.level(),pos),"Gate blocks must be inside the arena.");
@@ -199,9 +207,9 @@ public final class ArenaService {
     public Rating rating(UUID id){return data.ratings.computeIfAbsent(id,k->new Rating(service.config.arenaEloStart));}
     public void abortMatch(String reason){if(data.match==null)return;loading=false;List<UUID> participants=participants(data.match);data.match=null;data.event.paused=true;for(UUID id:participants){Snapshot s=data.snapshots.get(id);if(s!=null)s.restoring=true;service.ledger.clear(id);}save();resetTerrain();cleanupEntities();releaseTickets();for(UUID id:participants){ServerPlayer p=service.server.getPlayerList().getPlayer(id);if(p!=null)restore(p);}announce(reason+" • match paused without an Elo result. Host can use tournament next to replay.");}
     public void cancel(){require(active(),"No active tournament.");if(data.match!=null)abortMatch("Event cancelled");data.event.phase=Phase.CANCELLED;save();bar.removeAllPlayers();announce(data.event.name+" was stopped.");}
-    public boolean disconnect(ServerPlayer p){boolean reserved=reserved(p.getUUID());if(reserved&&!service.stopping){if(data.match!=null&&data.match.phase!=MatchPhase.PREPARING){UUID side=ArenaRules.side(data.event,p.getUUID());finish(side.equals(data.match.pair.a)?data.match.pair.b:data.match.pair.a);}else if(data.match!=null)abortMatch("A fighter disconnected during setup");}return reserved;}
+    public boolean disconnect(ServerPlayer p){arrivals.remove(p.getUUID());boolean reserved=reserved(p.getUUID());if(reserved&&!service.stopping){if(data.match!=null&&data.match.phase!=MatchPhase.PREPARING){UUID side=ArenaRules.side(data.event,p.getUUID());finish(side.equals(data.match.pair.a)?data.match.pair.b:data.match.pair.a);}else if(data.match!=null)abortMatch("A fighter disconnected during setup");}return reserved;}
     public void join(ServerPlayer p){if(reserved(p.getUUID()))restore(p);}
-    public void stop(){if(data.match!=null)abortMatch("Server restart");for(ServerPlayer p:service.server.getPlayerList().getPlayers())if(reserved(p.getUUID()))restore(p);bar.removeAllPlayers();releaseTickets();for(ReturnSite site:new ArrayList<>(returnTickets.keySet()))site.level.getChunkSource().removeTicketWithRadius(RETURN_TICKET,site.pos,2);returnTickets.clear();save();}
+    public void stop(){arrivals.clear();if(data.match!=null)abortMatch("Server restart");for(ServerPlayer p:service.server.getPlayerList().getPlayers())if(reserved(p.getUUID()))restore(p);bar.removeAllPlayers();releaseTickets();for(ReturnSite site:new ArrayList<>(returnTickets.keySet()))site.level.getChunkSource().removeTicketWithRadius(RETURN_TICKET,site.pos,2);returnTickets.clear();save();}
     void resetTerrain(){
         if(data.setup.region==null)return;ServerLevel level=level(data.setup.region.dimension);boolean previous=internal;internal=true;
         try{Iterator<Map.Entry<String,String>> iterator=data.changedBlocks.entrySet().iterator();while(iterator.hasNext()){var entry=iterator.next();String[] xyz=entry.getKey().split(",");BlockPos pos=new BlockPos(Integer.parseInt(xyz[0]),Integer.parseInt(xyz[1]),Integer.parseInt(xyz[2]));if(level.getChunkSource().getChunkNow(pos.getX()>>4,pos.getZ()>>4)==null)continue;require(level.setBlock(pos,state(entry.getValue()),3)||level.getBlockState(pos).equals(state(entry.getValue())),"An arena block could not be restored.");iterator.remove();}
@@ -224,7 +232,7 @@ public final class ArenaService {
         if(ticks%20==0)hud();
     }
     private void hud(){if(!active()){bar.removeAllPlayers();return;}String status=data.event.phase==Phase.APPLICATIONS?"Applications • "+data.event.entries.size()+" teams":data.match==null?"Waiting for next match":data.match.phase==MatchPhase.COUNTDOWN?"Starts in "+Math.max(0,(data.match.startsAt-service.now()+999)/1000)+"s":team(data.match.pair.a)+" vs "+team(data.match.pair.b);bar.setName(CombatService.text(data.event.name+" • "+status,"gold"));bar.setProgress(data.match!=null&&data.match.phase==MatchPhase.FIGHTING?(float)Math.max(0,Math.min(1,(data.match.endsAt-service.now())/(service.config.arenaMaxFightSeconds*1000d))):1);Set<ServerPlayer> online=new HashSet<>(service.server.getPlayerList().getPlayers());for(ServerPlayer old:new ArrayList<>(bar.getPlayers()))if(!online.contains(old))bar.removePlayer(old);for(ServerPlayer p:online)if(!bar.getPlayers().contains(p))bar.addPlayer(p);}
-    public boolean allowTeleport(ServerPlayer p,ServerLevel target,double x,double y,double z){if(internal)return true;if(reserved(p.getUUID()))return fighter(p.getUUID())&&inside(p.level(),p.blockPosition())&&inside(target,x,y,z);return !inside(target,x,y,z)||admin(p)||!active();}
+    public boolean allowTeleport(ServerPlayer p,ServerLevel target,double x,double y,double z){if(internal)return true;if(reserved(p.getUUID()))return fighter(p.getUUID())&&inside(p.level(),p.blockPosition())&&inside(target,x,y,z);if(authorizedArrival!=null&&authorizedArrival.player.equals(p.getUUID())&&active()&&authorizedArrival.event.equals(data.event.id)&&authorizedArrival.point==data.setup.teleportSpot&&authorizedArrival.point.dimension.equals(target.dimension().identifier().toString())&&Math.abs(x-authorizedArrival.point.x)<.0001&&Math.abs(y-authorizedArrival.point.y)<.0001&&Math.abs(z-authorizedArrival.point.z)<.0001)return true;return !inside(target,x,y,z)||admin(p)||!active();}
     public boolean allowCommand(ServerPlayer p,String command){return !reserved(p.getUUID())||CommandRules.matches(command,service.config.arenaAllowedCommands);}
     public boolean freezeMovement(ServerPlayer p){return reserved(p.getUUID())&&(data.snapshots.get(p.getUUID()).restoring||data.match==null||data.match.phase!=MatchPhase.FIGHTING);}
     public void menu(ServerPlayer p){ArenaUi.player(this,p);}

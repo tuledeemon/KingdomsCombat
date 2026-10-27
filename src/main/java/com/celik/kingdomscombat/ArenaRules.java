@@ -18,7 +18,8 @@ public final class ArenaRules {
     }
     public static final class Gate {public int x,y,z;public String state;}
     public static final class Setup {
-        public Point corner1,corner2,spawn1,spawn2;
+        public Point corner1,corner2,spawn1,spawn2,teleportSpot;
+        public int regionPadding;
         public Region region;
         public List<String> kit=new ArrayList<>();
         public List<Gate> gates=new ArrayList<>();

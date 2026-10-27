@@ -12,5 +12,5 @@ public final class VoiceChatHook implements VoicechatPlugin {
         registration.registerEvent(LocationalSoundPacketEvent.class,this::sound,1000);
         registration.registerEvent(StaticSoundPacketEvent.class,this::sound,1000);
     }
-    private void sound(PacketEvent<?> event){var sender=event.getSenderConnection();var receiver=event.getReceiverConnection();if(sender!=null&&VoicePolicy.muted(sender.getPlayer().getUuid())||receiver!=null&&VoicePolicy.snapshot.restricted().contains(receiver.getPlayer().getUuid()))event.cancel();}
+    private void sound(PacketEvent<?> event){var sender=event.getSenderConnection();var receiver=event.getReceiverConnection();if(sender!=null&&VoicePolicy.muted(sender.getPlayer().getUuid())||receiver!=null&&VoicePolicy.snapshot.restricted().contains(receiver.getPlayer().getUuid())&&(sender==null||!VoicePolicy.snapshot.audibleStaff().contains(sender.getPlayer().getUuid())))event.cancel();}
 }
