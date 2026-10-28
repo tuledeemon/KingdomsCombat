@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.4.0
+
+- Add observational fast-click, click-timing and repeated movement/farming-cycle checks with bounded sample windows, lag guards, independent alert cooldowns and configurable thresholds. No automatic punishments or action blocking.
+- Add staff-mode-only live alerts, persistent evidence, session alert toggle, per-player history and admin history clearing. Detector/storage failures preserve gameplay.
+- Add a review menu ranked by decaying recent flags, with player heads linking to evidence. Use profile heads in the staff player list and detail headers, and preserve profiles for offline review.
+
 ## 1.3.4
 
 - Add persisted own-gear and admin-kit modes for tournaments and duels, selectable by host command/menu before a bracket starts. Own gear does not require a saved kit.

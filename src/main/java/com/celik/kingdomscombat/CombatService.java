@@ -29,6 +29,7 @@ public final class CombatService {
     public final ArenaService arenas;
     public final StaffPermissions permissions;
     public final StaffService staff;
+    public final FlagService flags;
     public CombatConfig config;
     public final Path configFile,stateFile;
     private final LongSupplier clock;
@@ -46,7 +47,7 @@ public final class CombatService {
         ledger=new TagLedger(CombatStore.read(stateFile,TagLedger.Data.class,new TagLedger.Data()));ledger.prune(now());
         if(!trySave())throw new IllegalStateException("Combat state is not writable; refusing to start without durable logout protection: "+stateFile);
         events=new HostedEvents(this,stateFile.resolveSibling("event.json"));
-        permissions=new StaffPermissions(this);staff=new StaffService(this);arenas=new ArenaService(this);
+        permissions=new StaffPermissions(this);staff=new StaffService(this);arenas=new ArenaService(this);flags=new FlagService(this);
     }
     public long now(){return clock.getAsLong();}
     public static boolean allowed(CommandSourceStack source,String permission,int level){boolean fallback=admin(source,level);return !permission.isBlank()&&FabricLoader.getInstance().isModLoaded("fabric-permissions-api-v0")?PermissionHook.allowed(source,permission,fallback):fallback;}
@@ -84,6 +85,7 @@ public final class CombatService {
     public void tick(){
         ticks++;if(stopping)return;
         staff.tick();
+        flags.observe(flags::tick);
         try{arenas.tick();}catch(RuntimeException failure){if(ticks%100==0)KingdomsCombat.LOG.error("Arena paused; recovery backups retained",failure);}
         VoicePolicy.refresh(this);
         if(ticks%20==0)events.tick();
@@ -121,9 +123,10 @@ public final class CombatService {
         boolean enabled=switch(method){case "ender_pearl"->config.resetOnEnderPearl;case "wind_charge"->config.resetOnWindCharge;case "spear_lunge"->config.resetOnSpearLunge;default->false;};
         if(enabled){status(p);if(ledger.refreshSelf(p.getUUID(),now(),config)){dirty=true;save();}}
     }
-    public void death(ServerPlayer p,DamageSource source){UUID killer=source.getEntity() instanceof ServerPlayer other?other.getUUID():null;ledger.death(p.getUUID(),killer,config);dirty=true;save();}
+    public void death(ServerPlayer p,DamageSource source){flags.leave(p.getUUID());UUID killer=source.getEntity() instanceof ServerPlayer other?other.getUUID():null;ledger.death(p.getUUID(),killer,config);dirty=true;save();}
     public void disconnect(ServerPlayer p){
         if(!server.isSameThread())throw new IllegalStateException("Combat logout must run before player removal on the server thread.");
+        flags.leave(p.getUUID());
         boolean arenaLogout=arenas.disconnect(p);
         var current=status(p);
         if(!arenaLogout&&config.enabled&&(!stopping||config.punishDuringShutdown)&&p.isAlive()&&!bypass(p)&&!staffMode(p)&&TagLedger.penalty(current,config)){
@@ -220,7 +223,7 @@ public final class CombatService {
             return false;
         }
     }
-    public void reload(){CombatConfig next=CombatStore.read(configFile,CombatConfig.class,new CombatConfig());next.validate();if(config.arenaEnabled&&!next.arenaEnabled&&arenas.active())arenas.cancel();config=next;CombatStore.write(configFile,next);}
-    public void replaceConfig(CombatConfig next){next.validate();if(config.arenaEnabled&&!next.arenaEnabled&&arenas.active())arenas.cancel();CombatStore.write(configFile,next);config=next;}
-    public void stop(){stopping=true;arenas.stop();VoicePolicy.reset();staff.stop();events.hide();save();}
+    public void reload(){CombatConfig next=CombatStore.read(configFile,CombatConfig.class,new CombatConfig());next.validate();if(config.arenaEnabled&&!next.arenaEnabled&&arenas.active())arenas.cancel();config=next;flags.reset();CombatStore.write(configFile,next);}
+    public void replaceConfig(CombatConfig next){next.validate();if(config.arenaEnabled&&!next.arenaEnabled&&arenas.active())arenas.cancel();CombatStore.write(configFile,next);config=next;flags.reset();}
+    public void stop(){stopping=true;flags.save();arenas.stop();VoicePolicy.reset();staff.stop();events.hide();save();}
 }

@@ -4,6 +4,8 @@ A separate **server-only Fabric 26.2 addon** for [Kingdoms](https://github.com/t
 
 **No client mod or resource pack is needed.** Custom menus, messages, titles and the countdown use Kingdoms' small-caps style.
 
+**1.4.0:** Staff-only suspicion flags for sustained clicking patterns and repeated movement/farming loops. A ranked review menu shows recent evidence and uses real player heads throughout staff screens. Detection never punishes or blocks actions. [Review menu and settings](FLAGS_GUIDE.md).
+
 **1.3.4:** Optional own-gear tournaments and duels back up personal equipment and restore original items and supplies afterward. Every round clears effects and fully resets health, food, saturation and exhaustion before gates open. [Commands and limitations](TOURNAMENTS_GUIDE.md#choose-the-gear-mode).
 
 **1.3.3:** Banner customization only decorates existing kit shields in place, preserving enchantments, damage and other properties. Kits without shields never receive one.

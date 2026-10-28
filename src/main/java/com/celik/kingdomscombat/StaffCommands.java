@@ -23,6 +23,11 @@ public final class StaffCommands {
         while(matcher.find()){if(matcher.start()!=end)throw new IllegalArgumentException("Use a duration such as 30m, 1h30m, 7d or permanent.");end=matcher.end();long factor=switch(matcher.group(2).toLowerCase(Locale.ROOT)){case "m"->60;case "h"->3600;case "d"->86400;case "w"->604800;default->1;};result=result.add(new BigDecimal(matcher.group(1)).multiply(BigDecimal.valueOf(factor)));}
         if(end!=raw.length()||end==0||result.compareTo(BigDecimal.ONE)<0||result.compareTo(BigDecimal.valueOf(315360000))>0)throw new IllegalArgumentException("Use a duration from 1 second to 10 years, or permanent.");return result.longValue();
     }
+    private static void flags(CommandContext<CommandSourceStack> c,UUID id){
+        tools().require(c.getSource(),"flags");var p=c.getSource().getPlayer();if(p!=null){if(id==null)StaffMenu.suspects(p,0);else StaffMenu.flags(p,id,0);return;}
+        var entries=KingdomsCombat.service.flags.history(id);c.getSource().sendSuccess(()->CombatService.text("Suspicion flags: "+entries.size()+" • observations require review, not proof.","gold"),false);
+        entries.stream().limit(20).forEach(f->c.getSource().sendSuccess(()->CombatService.text(java.time.Instant.ofEpochMilli(f.time)+" • "+f.name+" • "+f.check+" • "+f.evidence+" • "+f.dimension+" "+f.x+", "+f.y+", "+f.z,"gray"),false));
+    }
     public static void register(CommandDispatcher<CommandSourceStack> d){
         var root=literal("staff").requires(StaffCommands::access).executes(c->run(c,()->StaffMenu.home(c.getSource().getPlayerOrException(),0)));
         root.then(literal("freeze").then(player().executes(c->run(c,()->tools().freeze(c.getSource(),target(c),true)))));
@@ -36,6 +41,11 @@ public final class StaffCommands {
         root.then(literal("notes").then(player().executes(c->run(c,()->StaffMenu.notes(c.getSource().getPlayerOrException(),target(c),0)))));
         root.then(literal("note").then(player().then(reason().executes(c->run(c,()->tools().note(c.getSource(),target(c),StringArgumentType.getString(c,"reason")))))));
         root.then(literal("chat").then(argument("message",StringArgumentType.greedyString()).executes(c->run(c,()->tools().staffChat(c.getSource().getPlayerOrException(),StringArgumentType.getString(c,"message"))))));
+        var flags=literal("flags").executes(c->run(c,()->flags(c,null)));
+        flags.then(player().executes(c->run(c,()->flags(c,target(c)))));
+        flags.then(literal("alerts").executes(c->run(c,()->{boolean on=KingdomsCombat.service.flags.toggleAlerts(c.getSource().getPlayerOrException());c.getSource().sendSuccess(()->CombatService.text("Suspicion alerts "+(on?"enabled.":"muted for this session."),"aqua"),false);})));
+        flags.then(literal("clear").requires(source->CombatService.allowed(source,KingdomsCombat.service.config.adminPermission,KingdomsCombat.service.config.adminLevel)).then(player().executes(c->run(c,()->{tools().require(c.getSource(),"flags");UUID id=target(c);KingdomsCombat.service.flags.clear(id);KingdomsCombat.LOG.info("Flag history for {} cleared by {}",id,c.getSource().getTextName());c.getSource().sendSuccess(()->CombatService.text("Suspicion history cleared.","aqua"),false);}))));
+        root.then(flags);
         d.register(root);
         d.register(literal("sc").requires(StaffCommands::access).then(argument("message",StringArgumentType.greedyString()).executes(c->run(c,()->tools().staffChat(c.getSource().getPlayerOrException(),StringArgumentType.getString(c,"message"))))));
     }

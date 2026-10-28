@@ -1,4 +1,10 @@
-# Release verification — 1.3.4
+# Release verification — 1.4.0
+
+92 unit tests and 272 dedicated-server checks passed with Kingdoms 1.12.2. Synthetic timing/action sequences verify sustained clicking and rich repeated movement loops, while jittery input, idle/straight movement, mining and separated clicking sessions are excluded. The native swing packet/handler path records arrival time and produces evidence without punishment. Staff-mode permission and session alert toggles, persistent history, review-score ordering/expiry, protected menus and online/offline player profile heads are checked. Observer errors allow gameplay to continue. Existing arena, inventory/artifact restoration, logout deaths, events and teleport checks continue passing.
+
+These are heuristic observations requiring human review. No graphical client, real cheating-client evaluation or production-server trial was used; detection recall and false-positive rates have not been measured on real player sessions.
+
+## Previous release — 1.3.4
 
 80 unit tests and 255 dedicated-server checks passed with Kingdoms 1.12.2. Own-gear match preparation runs without a saved kit, preserves personal weapon wear and stack counts, allows authenticated artifacts with saved record recovery, blocks event-chest exports and locks gear changes after start. Native gate opening clears countdown effects and resets health, food, saturation and exhaustion. Match completion restores original supplies, health and authenticated artifact data, including a retired/broken artifact and spent Guardian Angel charges. Saved gear modes round-trip through legacy defaults and persistence. No graphical client or production server was used.
 

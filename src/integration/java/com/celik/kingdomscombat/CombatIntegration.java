@@ -143,6 +143,7 @@ public final class CombatIntegration implements ModInitializer {
             b.setHealth(20);s.ledger.clear(b.getUUID());s.ledger.data.logoutPenalties.put(b.getUUID(),UUID.randomUUID());((PenaltyReceipt)b).combat$penaltyReceipt(null);var loading=ServerGamePacketListenerImpl.class.getDeclaredField("waitingForRespawn");loading.setAccessible(true);loading.setBoolean(b.connection,true);check(!b.connection.hasClientLoaded(),"logout recovery fixture has normal login/respawn immunity");s.join(b);check(!b.isAlive()&&((PenaltyReceipt)b).combat$penaltyReceipt()!=null,"interrupted logout penalty is applied on next join despite loading immunity");
             cfg=s.config;cfg.killOnWarLogout=false;cfg.killOnAirDropLogout=false;c.setHealth(20);s.ledger.clear(c.getUUID());s.ledger.zone(c.getUUID(),TagLedger.Reason.WAR,time[0],20);s.disconnect(c);check(c.isAlive(),"war-only restrictions do not kill on logout by default");
             ArenaIntegration.run(s,time,this::check);
+            FlagIntegration.run(s,time,this::check);
         }finally{drops.drops.clear();drops.drops.addAll(savedDrops);kingdoms.commit(savedKingdoms);remove(server,a);remove(server,b);remove(server,c);KingdomsCombat.service=original;}
     }
     private static void damage(ServerPlayer attacker,ServerPlayer victim,ServerLevel level){victim.setHealth(20);victim.invulnerableTime=0;victim.hurtServer(level,attacker.damageSources().playerAttack(attacker),3);}

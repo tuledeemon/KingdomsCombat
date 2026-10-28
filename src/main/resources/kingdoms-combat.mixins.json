@@ -5,6 +5,9 @@
   "mixins": [
     "AirDropsAccessor",
     "CommandMixin",
+    "FlagSwingPacketMixin",
+    "FlagNetworkMixin",
+    "FlagMiningMixin",
     "MovementItemMixin",
     "LungeMixin",
     "HudMixin",

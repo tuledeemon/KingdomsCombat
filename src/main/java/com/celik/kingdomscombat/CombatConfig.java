@@ -4,6 +4,15 @@ import java.util.*;
 
 public final class CombatConfig {
     public boolean enabled=true;
+    public boolean antiCheatEnabled=true,antiCheatClicks=true,antiCheatMacros=true,antiCheatLog=true;
+    public int antiCheatAlertCooldownSeconds=120,antiCheatHistoryLimit=500,antiCheatRetentionDays=14;
+    public int antiCheatClickSamples=128,antiCheatClickWindows=3;
+    public double antiCheatMaxCps=24,antiCheatRegularMinCps=4,antiCheatRegularStdMs=1.2;
+    public int antiCheatMacroSampleTicks=10,antiCheatMacroMinPeriod=24,antiCheatMacroMaxPeriod=120,antiCheatMacroRepeats=5;
+    public double antiCheatMacroMatch=.98;
+    public int antiCheatRankingHours=24;
+    public int antiCheatMaxTickMs=120,antiCheatLagGraceSeconds=5;
+
     public boolean arenaEnabled=true,arenaBuildAllowed=true,arenaVoiceRestricted=true,staffMuteVoice=true,arenaAutoNext=true,arenaFluidFlow=true,arenaSpectatorsHearStaff=true;
     public int arenaCountdownSeconds=10,arenaBetweenMatchesSeconds=15,arenaMaxFightSeconds=600;
     public int arenaMaxTeams=64,arenaMaxGates=512,arenaMaxChangedBlocks=4096,arenaMaxRegionVolume=4000000,arenaMaxRegionChunks=256;
@@ -50,6 +59,11 @@ public final class CombatConfig {
     public List<String> blockedCommands=new ArrayList<>(List.of("home","phome","publichome","warp","spawn","tp","teleport","tpo","tphere","tpoffline","tpall","tpa","tpahere","tpaall","tpaccept","tpyes","rtp","back","hub","lobby","server"));
     public List<String> mutedCommands=new ArrayList<>(List.of("me","say","tell","msg","w","teammsg","tm","whisper","message","reply","r"));
     public void validate(){
+        if(antiCheatAlertCooldownSeconds<1||antiCheatAlertCooldownSeconds>86400||antiCheatHistoryLimit<1||antiCheatHistoryLimit>10000||antiCheatRetentionDays<1||antiCheatRetentionDays>365||antiCheatClickSamples<32||antiCheatClickSamples>512||antiCheatClickWindows<2||antiCheatClickWindows>20)throw new IllegalArgumentException("Invalid anti-cheat alert/click limits.");
+        if(!Double.isFinite(antiCheatMaxCps)||antiCheatMaxCps<10||antiCheatMaxCps>100||!Double.isFinite(antiCheatRegularMinCps)||antiCheatRegularMinCps<2||antiCheatRegularMinCps>20||!Double.isFinite(antiCheatRegularStdMs)||antiCheatRegularStdMs<=0||antiCheatRegularStdMs>10)throw new IllegalArgumentException("Invalid anti-cheat click thresholds.");
+        if(antiCheatMacroSampleTicks<5||antiCheatMacroSampleTicks>40||antiCheatMacroMinPeriod<12||antiCheatMacroMaxPeriod<antiCheatMacroMinPeriod||antiCheatMacroMaxPeriod>200||antiCheatMacroRepeats<3||antiCheatMacroRepeats>8||!Double.isFinite(antiCheatMacroMatch)||antiCheatMacroMatch<.9||antiCheatMacroMatch>1)throw new IllegalArgumentException("Invalid anti-cheat macro thresholds.");
+        if(antiCheatRankingHours<1||antiCheatRankingHours>720||antiCheatMaxTickMs<60||antiCheatMaxTickMs>1000||antiCheatLagGraceSeconds<1||antiCheatLagGraceSeconds>120)throw new IllegalArgumentException("Invalid anti-cheat ranking/lag limits.");
+
         if(arenaCountdownSeconds<3||arenaCountdownSeconds>120||arenaBetweenMatchesSeconds<1||arenaBetweenMatchesSeconds>600||arenaMaxFightSeconds<10||arenaMaxFightSeconds>7200||arenaMaxTeams<2||arenaMaxTeams>256||arenaMaxGates<1||arenaMaxGates>4096||arenaMaxChangedBlocks<1||arenaMaxChangedBlocks>100000||arenaMaxRegionVolume<1||arenaMaxRegionVolume>16000000||arenaMaxRegionChunks<1||arenaMaxRegionChunks>1024||arenaEloStart<0||arenaEloStart>100000||arenaEloK<1||arenaEloK>1000||arenaEloScale<1||arenaEloScale>10000)throw new IllegalArgumentException("Invalid arena settings.");
         if(arenaAllowedCommands==null||arenaAllowedCommands.size()>128||arenaAllowedCommands.stream().anyMatch(v->v==null||v.isBlank()||v.length()>128))throw new IllegalArgumentException("Invalid arena command list.");
         if(mutedCommands==null||mutedCommands.size()>512||mutedCommands.stream().anyMatch(s->s==null||s.isBlank()||s.length()>256))throw new IllegalArgumentException("Invalid muted command list.");
