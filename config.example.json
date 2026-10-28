@@ -158,5 +158,11 @@
   "antiCheatMacroMatch": 0.98,
   "antiCheatRankingHours": 24,
   "antiCheatMaxTickMs": 120,
-  "antiCheatLagGraceSeconds": 5
+  "antiCheatLagGraceSeconds": 5,
+  "antiCheatSlowTiming": true,
+  "antiCheatSlowSamples": 64,
+  "antiCheatSlowWindows": 3,
+  "antiCheatSlowMinCps": 0.5,
+  "antiCheatSlowMaxCps": 2,
+  "antiCheatSlowStdMs": 3
 }

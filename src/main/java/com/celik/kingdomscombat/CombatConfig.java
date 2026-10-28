@@ -7,6 +7,9 @@ public final class CombatConfig {
     public boolean antiCheatEnabled=true,antiCheatClicks=true,antiCheatMacros=true,antiCheatLog=true;
     public int antiCheatAlertCooldownSeconds=120,antiCheatHistoryLimit=500,antiCheatRetentionDays=14;
     public int antiCheatClickSamples=128,antiCheatClickWindows=3;
+    public boolean antiCheatSlowTiming=true;
+    public int antiCheatSlowSamples=64,antiCheatSlowWindows=3;
+    public double antiCheatSlowMinCps=.5,antiCheatSlowMaxCps=2,antiCheatSlowStdMs=3;
     public double antiCheatMaxCps=24,antiCheatRegularMinCps=4,antiCheatRegularStdMs=1.2;
     public int antiCheatMacroSampleTicks=10,antiCheatMacroMinPeriod=24,antiCheatMacroMaxPeriod=120,antiCheatMacroRepeats=5;
     public double antiCheatMacroMatch=.98;
@@ -59,6 +62,7 @@ public final class CombatConfig {
     public List<String> blockedCommands=new ArrayList<>(List.of("home","phome","publichome","warp","spawn","tp","teleport","tpo","tphere","tpoffline","tpall","tpa","tpahere","tpaall","tpaccept","tpyes","rtp","back","hub","lobby","server"));
     public List<String> mutedCommands=new ArrayList<>(List.of("me","say","tell","msg","w","teammsg","tm","whisper","message","reply","r"));
     public void validate(){
+        if(antiCheatSlowSamples<32||antiCheatSlowSamples>512||antiCheatSlowWindows<2||antiCheatSlowWindows>20||!Double.isFinite(antiCheatSlowMinCps)||antiCheatSlowMinCps<.1||antiCheatSlowMinCps>2||!Double.isFinite(antiCheatSlowMaxCps)||antiCheatSlowMaxCps<antiCheatSlowMinCps||antiCheatSlowMaxCps>4||!Double.isFinite(antiCheatSlowStdMs)||antiCheatSlowStdMs<=0||antiCheatSlowStdMs>20)throw new IllegalArgumentException("Invalid slow-click timing thresholds.");
         if(antiCheatAlertCooldownSeconds<1||antiCheatAlertCooldownSeconds>86400||antiCheatHistoryLimit<1||antiCheatHistoryLimit>10000||antiCheatRetentionDays<1||antiCheatRetentionDays>365||antiCheatClickSamples<32||antiCheatClickSamples>512||antiCheatClickWindows<2||antiCheatClickWindows>20)throw new IllegalArgumentException("Invalid anti-cheat alert/click limits.");
         if(!Double.isFinite(antiCheatMaxCps)||antiCheatMaxCps<10||antiCheatMaxCps>100||!Double.isFinite(antiCheatRegularMinCps)||antiCheatRegularMinCps<2||antiCheatRegularMinCps>20||!Double.isFinite(antiCheatRegularStdMs)||antiCheatRegularStdMs<=0||antiCheatRegularStdMs>10)throw new IllegalArgumentException("Invalid anti-cheat click thresholds.");
         if(antiCheatMacroSampleTicks<5||antiCheatMacroSampleTicks>40||antiCheatMacroMinPeriod<12||antiCheatMacroMaxPeriod<antiCheatMacroMinPeriod||antiCheatMacroMaxPeriod>200||antiCheatMacroRepeats<3||antiCheatMacroRepeats>8||!Double.isFinite(antiCheatMacroMatch)||antiCheatMacroMatch<.9||antiCheatMacroMatch>1)throw new IllegalArgumentException("Invalid anti-cheat macro thresholds.");

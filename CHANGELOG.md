@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.4.1
+
+- Add independent configurable low-rate attack timing analysis, enabled for existing configurations without changing the faster timing gate. Require several long, consistent windows and preserve mining/use/lag exemptions.
+- Verify exact one-hit-per-second repetition is observable and ordinary low-rate timing variation does not flag.
+
 ## 1.4.0
 
 - Add observational fast-click, click-timing and repeated movement/farming-cycle checks with bounded sample windows, lag guards, independent alert cooldowns and configurable thresholds. No automatic punishments or action blocking.

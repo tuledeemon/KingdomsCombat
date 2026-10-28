@@ -14,9 +14,9 @@ public final class FlagService {
         public List<Flag> flags=new ArrayList<>();
     }
     private static final class Track {
-        final List<Long> clicks=new ArrayList<>();final List<FlagRules.Step> steps=new ArrayList<>();
+        final List<Long> clicks=new ArrayList<>(),slowClicks=new ArrayList<>();final List<FlagRules.Step> steps=new ArrayList<>();
         final Map<String,Long> alerts=new HashMap<>();
-        boolean mining;int fast,regular,actions,bits;long attackAt,miningAt,assistedUntil,lastSwing;double x,y,z;float yaw,pitch;String world;
+        boolean mining;int fast,regular,slow,actions,bits;long attackAt,miningAt,assistedUntil,lastSwing,lastSlowSwing;double x,y,z;float yaw,pitch;String world;
     }
     private final CombatService service;
     final Path file;final Data data;
@@ -37,8 +37,9 @@ public final class FlagService {
     private boolean timing(){return service.now()>=suspendUntil;}
     public void action(ServerPlayer p,int kind){if(!eligible(p)||!timing())return;Track t=track(p);t.actions=Math.min(32,t.actions+1);t.bits|=kind;if(kind==1)t.attackAt=service.now();}
     public void swing(ServerPlayer p,long receivedNanos){
-        if(!c().antiCheatClicks||!eligible(p)||!timing()||p.isUsingItem()){Track old=tracks.get(p.getUUID());if(old!=null){old.clicks.clear();old.fast=old.regular=0;}return;}
-        Track t=track(p);long now=service.now();if(t.attackAt==0||now-t.attackAt>3000||t.mining||now-t.miningAt<500){t.clicks.clear();t.fast=t.regular=0;return;}
+        if(!c().antiCheatClicks||!eligible(p)||!timing()||p.isUsingItem()){Track old=tracks.get(p.getUUID());if(old!=null){resetClicks(old);}return;}
+        Track t=track(p);long now=service.now();if(t.attackAt==0||now-t.attackAt>3000||t.mining||now-t.miningAt<500){resetClicks(t);return;}
+        slowSwing(p,t,receivedNanos);
         if(t.lastSwing!=0&&(receivedNanos<=t.lastSwing||receivedNanos-t.lastSwing>1_000_000_000L)){t.clicks.clear();t.fast=t.regular=0;}t.lastSwing=receivedNanos;
         t.clicks.add(receivedNanos);if(t.clicks.size()<c().antiCheatClickSamples+1)return;
         var stats=FlagRules.clicks(t.clicks);double seconds=(t.clicks.getLast()-t.clicks.getFirst())/1e9;t.clicks.clear();
@@ -47,6 +48,15 @@ public final class FlagService {
         t.regular=seconds>=8&&stats.cps()>=c().antiCheatRegularMinCps&&!stats.tickAligned()&&stats.deviation()<=c().antiCheatRegularStdMs?t.regular+1:0;
         if(t.fast>=c().antiCheatClickWindows){flag(p,"Fast clicking",String.format(Locale.ROOT,"%.1f CPS across %d separate %d-click windows",stats.cps(),t.fast,c().antiCheatClickSamples));t.fast=0;}
         if(t.regular>=c().antiCheatClickWindows){flag(p,"Click timing",String.format(Locale.ROOT,"%.1f CPS; interval deviation %.2f ms across %d separate windows",stats.cps(),stats.deviation(),t.regular));t.regular=0;}
+    }
+    private void resetClicks(Track t){t.clicks.clear();t.slowClicks.clear();t.fast=t.regular=t.slow=0;t.lastSwing=t.lastSlowSwing=0;}
+    private void slowSwing(ServerPlayer p,Track t,long nanos){
+        if(!c().antiCheatSlowTiming){t.slowClicks.clear();t.slow=0;return;}
+        long maximumGap=(long)(2_000_000_000.0/c().antiCheatSlowMinCps);
+        if(t.lastSlowSwing!=0&&(nanos<=t.lastSlowSwing||nanos-t.lastSlowSwing>maximumGap)){t.slowClicks.clear();t.slow=0;}t.lastSlowSwing=nanos;
+        t.slowClicks.add(nanos);if(t.slowClicks.size()<c().antiCheatSlowSamples+1)return;
+        var stats=FlagRules.clicks(t.slowClicks);t.slow=FlagRules.slowTiming(t.slowClicks,c())?t.slow+1:0;t.slowClicks.clear();
+        if(t.slow>=c().antiCheatSlowWindows){flag(p,"Slow click timing",String.format(Locale.ROOT,"%.2f CPS; interval deviation %.2f ms across %d separate %d-interval windows; review repeated low-rate attacks",stats.cps(),stats.deviation(),t.slow,c().antiCheatSlowSamples));t.slow=0;}
     }
     public void tick(){
         long nano=System.nanoTime();ticks++;

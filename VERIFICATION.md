@@ -1,4 +1,8 @@
-# Release verification — 1.4.0
+# Release verification — 1.4.1
+
+95 unit tests and 274 dedicated-server checks passed with Kingdoms 1.12.2. New tests verify sustained one-hit-per-second attacks produce slow-timing evidence, tick-aligned slow input is eligible, ordinary jitter/faster input/bursts fail the slow classifier, and existing configurations enable the new pipeline while preserving the old faster threshold. Existing checks continue passing. No graphical-client or production trial; heuristic false-positive/recall rates remain unmeasured on real player sessions.
+
+## Previous release — 1.4.0
 
 92 unit tests and 272 dedicated-server checks passed with Kingdoms 1.12.2. Synthetic timing/action sequences verify sustained clicking and rich repeated movement loops, while jittery input, idle/straight movement, mining and separated clicking sessions are excluded. The native swing packet/handler path records arrival time and produces evidence without punishment. Staff-mode permission and session alert toggles, persistent history, review-score ordering/expiry, protected menus and online/offline player profile heads are checked. Observer errors allow gameplay to continue. Existing arena, inventory/artifact restoration, logout deaths, events and teleport checks continue passing.
 

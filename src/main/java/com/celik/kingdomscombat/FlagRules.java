@@ -12,6 +12,7 @@ public final class FlagRules {
         int n=nanos.size()-1;double mean=sum/n;
         return new Click(1000/mean,Math.sqrt(Math.max(0,squares/n-mean*mean)),(double)bursts/n,aligned>=n*.9);
     }
+    public static boolean slowTiming(List<Long> nanos,CombatConfig c){Click s=clicks(nanos);return nanos.size()>=c.antiCheatSlowSamples+1&&s.cps()>=c.antiCheatSlowMinCps&&s.cps()<=c.antiCheatSlowMaxCps&&s.deviation()<=c.antiCheatSlowStdMs&&s.burstFraction()<=.1;}
     public record Step(long token,boolean moved,boolean turned,int actions) {}
     public static int repeatedCycle(List<Step> steps,int minimum,int maximum,int repeats,double match){
         int size=steps.size();for(int period=minimum;period<=Math.min(maximum,size/repeats);period++){
