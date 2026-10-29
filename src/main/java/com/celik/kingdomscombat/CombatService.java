@@ -32,6 +32,7 @@ public final class CombatService {
     public final PlaytimeRoles playtimeRoles;
     public final BalanceTop balanceTop;
     public final SellMarket sellMarket;
+    public final EventAreas areas;
     public CombatConfig config;
     public final Path configFile,stateFile;
     private final LongSupplier clock;
@@ -49,7 +50,7 @@ public final class CombatService {
         ledger=new TagLedger(CombatStore.read(stateFile,TagLedger.Data.class,new TagLedger.Data()));ledger.prune(now());
         if(!trySave())throw new IllegalStateException("Combat state is not writable; refusing to start without durable logout protection: "+stateFile);
         events=new HostedEvents(this,stateFile.resolveSibling("event.json"));
-        permissions=new StaffPermissions(this);staff=new StaffService(this);arenas=new ArenaService(this);playtimeRoles=new PlaytimeRoles(this);balanceTop=new BalanceTop(this);sellMarket=new SellMarket(this);
+        permissions=new StaffPermissions(this);staff=new StaffService(this);arenas=new ArenaService(this);playtimeRoles=new PlaytimeRoles(this);balanceTop=new BalanceTop(this);sellMarket=new SellMarket(this);areas=new EventAreas(this);
     }
     public long now(){return clock.getAsLong();}
     public static boolean allowed(CommandSourceStack source,String permission,int level){boolean fallback=admin(source,level);return !permission.isBlank()&&FabricLoader.getInstance().isModLoaded("fabric-permissions-api-v0")?PermissionHook.allowed(source,permission,fallback):fallback;}
@@ -142,7 +143,7 @@ public final class CombatService {
                 if(config.broadcastLogoutDeaths)server.getPlayerList().broadcastSystemMessage(message(config.logoutMessage.replace("{player}",p.getName().getString()),config.errorColor),false);
             }
         }
-        events.leave(p);staff.disconnect(p);staffModes.remove(p.getUUID());permissions.leave(p);previous.remove(p.getUUID());lastDenial.remove(p.getUUID());dirty=true;save();
+        events.leave(p);areas.leave(p.getUUID());staff.disconnect(p);staffModes.remove(p.getUUID());permissions.leave(p);previous.remove(p.getUUID());lastDenial.remove(p.getUUID());dirty=true;save();
     }
     public void join(ServerPlayer p){
         staffModes.remove(p.getUUID());

@@ -1,4 +1,8 @@
-# Release verification — 1.6.1
+# Release verification — 1.7.0
+
+101 unit tests and 375 dedicated-server checks passed with Kingdoms 1.12.2 and EconomyCraft 1.10.0. Native event-area checks cover two-corner commands and exact bounds, independent cuboids in the same chunk, in-place menus and per-area toggles, native breaking/placement and staff edits, PvP, local explosion terrain decisions without entity immunity, fluid/piston boundaries, fire/mob/container controls, button release, reload persistence, overlap/permission denial, kingdom reservation, tournament-territory precedence and GUI-only scoped unclaiming. Unit checks cover inclusive/negative/vertical bounds, independent flags, full-world-size indexing without chunk expansion, 4,096 areas, serialization and invalid bounds. Existing arena, totem, sell/worth, recovery and other checks remain passing. No graphical-client or production-server test.
+
+## Previous release — 1.6.1
 
 95 unit tests and 347 dedicated-server checks passed with Kingdoms 1.12.2 and EconomyCraft 1.10.0. Native worth checks cover shared-pressure pricing, marginal stack totals, IDs and spaced names, real pearl/potion stack sizes and aliases, held counts, styled chat execution, completion, named/empty/unknown-item rejection, console execution and unchanged market/wallet state. Existing sell payment and save-failure recovery, arena and totem checks remain passing. No graphical-client or production-server test.
 

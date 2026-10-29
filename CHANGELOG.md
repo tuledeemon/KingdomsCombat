@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.7.0
+
+- Add persistent named event-area cuboids with per-admin two-corner selection, explicit/relative coordinates, independent flag menus, saved-area browsing and scoped unclaiming.
+- Add per-area break, place, PvP, interaction, container, explosion-terrain, fire, fluid-flow, piston and mob-griefing flags. Preserve normal redstone/button updates and unchanged wilderness behavior.
+- Integrate native permission, mutation, damage, spawn, fluid, piston and automation decisions. Prevent boundary fluid/piston/container transfers and kingdom claim overlaps; defer inside the configured tournament arena to existing arena rules.
+- Use a dimension/interval index with no per-chunk expansion, expiry, count cap or forced chunk loading. Add the global `eventAreasEnabled` switch.
+
 ## 1.6.1
 
 - Add public `/worth <itemname>` and held-item `/worth` commands, including namespaced IDs, spaces/underscores, configured price-key suggestions and console lookup.

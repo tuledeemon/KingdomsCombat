@@ -149,5 +149,6 @@
   "baltopCacheSeconds": 30,
   "baltopMaxEntries": 10000,
   "baltopPageSize": 28,
-  "arenaMinecarts": true
+  "arenaMinecarts": true,
+  "eventAreasEnabled": true
 }

@@ -11,5 +11,5 @@ public abstract class ArenaClaimMixin {
     private void create(ServerPlayer player,String name,CallbackInfo ci){check(player);}
     @Inject(method={"claim","outpost"},at=@At("HEAD"))
     private void claim(ServerPlayer player,CallbackInfo ci){check(player);}
-    private static void check(ServerPlayer p){var service=KingdomsCombat.service;if(service!=null&&service.arenas.overlapsChunk(p.level(),p.blockPosition().getX()>>4,p.blockPosition().getZ()>>4))throw new IllegalArgumentException("This chunk overlaps a protected event arena.");}
+    private static void check(ServerPlayer p){var service=KingdomsCombat.service;if(service!=null&&service.arenas.overlapsChunk(p.level(),p.blockPosition().getX()>>4,p.blockPosition().getZ()>>4))throw new IllegalArgumentException("This chunk overlaps a protected event arena.");if(service!=null&&service.areas!=null&&service.areas.overlapsChunk(p.level(),p.blockPosition().getX()>>4,p.blockPosition().getZ()>>4))throw new IllegalArgumentException("This chunk overlaps a protected event area.");}
 }

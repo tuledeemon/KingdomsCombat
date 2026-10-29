@@ -4,6 +4,7 @@ import java.util.*;
 
 public final class CombatConfig {
     public boolean enabled=true;
+    public boolean eventAreasEnabled=true;
     public boolean blockEnderChestsInCombat=true;
     public boolean playtimeRoleEnabled=false;
     public String playtimeRoleId="";

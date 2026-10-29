@@ -30,7 +30,8 @@
     "ArenaMinecartStorageMixin",
     "ArenaHopperMinecartMixin",
     "EconomySellMenuMixin",
-    "EconomyShopSellMixin"
+    "EconomyShopSellMixin",
+    "EventAreaProtectionMixin"
   ],
   "injectors": {
     "defaultRequire": 1

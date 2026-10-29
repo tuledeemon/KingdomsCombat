@@ -44,6 +44,7 @@ public final class CombatCommands {
         event.then(chest);
         event.then(argument("name",StringArgumentType.string()).then(argument("time",StringArgumentType.word()).executes(c->run(c,()->s().events.start(c.getSource(),StringArgumentType.getString(c,"name"),StringArgumentType.getString(c,"time"))))));
         ArenaCommands.attach(event);
+        EventAreaCommands.attach(event);
         d.register(event);
     }
     private static int run(CommandContext<CommandSourceStack> c,Action action){try{action.run();return 1;}catch(Exception e){c.getSource().sendFailure(CombatService.text(e.getMessage()==null?"Action failed.":e.getMessage(),"red"));return 0;}}

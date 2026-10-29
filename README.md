@@ -4,6 +4,8 @@ A separate **server-only Fabric 26.2 addon** for [Kingdoms](https://github.com/t
 
 **No client mod or resource pack is needed.** Custom menus, messages, titles and the countdown use Kingdoms' small-caps style.
 
+**1.7.0:** Add permanent event-area cuboids selected with two corners. `/eventhost area` opens the flag menu for the area you stand inside, with independent settings and unclaiming. [Area guide](STAFF_EVENTS_GUIDE.md#permanent-event-areas).
+
 **1.6.1:** Add `/worth <itemname>` and held-item `/worth` with current dynamic unit, stack and held-amount estimates, item-name completion and console support. [Worth commands](SERVER_UTILITIES_GUIDE.md#check-an-items-worth).
 
 **1.6.0:** Add `/sell` with a close-to-sell menu, server-wide per-item supply pressure and real-time recovery. Reject named/unique items, preserve deposits and queued payments across saves/restarts, and reduce leaf starting prices to $1. EconomyCraft shop selling opens the same market. [Settings and commands](SERVER_UTILITIES_GUIDE.md#dynamic-sell-market).
