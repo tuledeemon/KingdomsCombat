@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.6.0
+
+- Add a public `/sell` input menu that sells on close, quotes the batch total and supports cancellation/withdrawal. Replace the old root/subcommands and redirect EconomyCraft sell-menu/shop-sell entry points into the same market.
+- Add independent server-wide item pressure, marginal batch pricing, real-time/offline recovery, policy overrides and admin setting/price/reset/reload commands. Import the supplied 1,695-price list and reduce all eleven leaf types from 3 to 1.
+- Reject custom names/item names, protected items, filled containers and EconomyCraft-rejected stacks. Retain items made unsellable before checkout.
+- Journal deposit/withdrawal transfers against durable player receipts and queue receipt-backed EconomyCraft payments. Cancel/refund on damage/shutdown, block combat/arena/frozen access and prevent arena admission with unsold deposits.
+
 ## 1.5.3
 
 - Handle arena defeat at the server-player death entry point, after vanilla totem protection, instead of the earlier Fabric death-permission event.

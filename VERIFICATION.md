@@ -1,4 +1,8 @@
-# Release verification — 1.5.3
+# Release verification — 1.6.0
+
+95 unit tests and 335 dedicated-server checks passed with Kingdoms 1.12.2 and EconomyCraft 1.10.0. Native checks cover command takeover, both EconomyCraft sell-screen entry points, custom-name/item-name rejection, durable shift-click deposits, close-to-sell wallet credits, repeated-close safety, shared pressure and elapsed-time recovery, cancellation, damage-time refunds and combat denial, disabled-price withdrawals, failed-ledger recovery, unacknowledged-journal rollback, queued/replayed payment recovery, admin settings/validation, money aliases and item resets. Unit checks exercise marginal batch pricing, split-sale equivalence, floors, lazy recovery, backwards clocks and policy validation. The supplied price file was compared entry by entry: all 1,695 entries remain, exactly eleven leaf sell prices change from 3 to 1, and their other fields are preserved. Existing totems, arena inventory recovery and other regression checks pass. No graphical-client or production-server test.
+
+## Previous release — 1.5.3
 
 87 unit tests and 306 dedicated-server checks passed with Kingdoms 1.12.2. Native lethal hits exercise main-hand and offhand totems, vanilla consumption, recovery effects and usage statistics, unchanged fighter/match/backup/Elo on activation, own-gear totem consumption and escrow recovery, and totem-bypassing damage. Existing no-totem defeat, bound equipment, disconnect recovery, minecarts and button checks remain passing. The new offhand regression test failed against 1.5.2 before the fix. No graphical-client or production-server test.
 

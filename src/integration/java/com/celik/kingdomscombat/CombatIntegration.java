@@ -144,6 +144,7 @@ public final class CombatIntegration implements ModInitializer {
             cfg=s.config;cfg.killOnWarLogout=false;cfg.killOnAirDropLogout=false;c.setHealth(20);s.ledger.clear(c.getUUID());s.ledger.zone(c.getUUID(),TagLedger.Reason.WAR,time[0],20);s.disconnect(c);check(c.isAlive(),"war-only restrictions do not kill on logout by default");
             ArenaIntegration.run(s,time,this::check);
             ServerUtilitiesIntegration.run(s,time,this::check);
+            SellIntegration.run(s,time,this::check);
         }finally{drops.drops.clear();drops.drops.addAll(savedDrops);kingdoms.commit(savedKingdoms);remove(server,a);remove(server,b);remove(server,c);KingdomsCombat.service=original;}
     }
     private static void damage(ServerPlayer attacker,ServerPlayer victim,ServerLevel level){victim.setHealth(20);victim.invulnerableTime=0;victim.hurtServer(level,attacker.damageSources().playerAttack(attacker),3);}

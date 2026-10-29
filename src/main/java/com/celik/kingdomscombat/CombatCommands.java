@@ -27,6 +27,7 @@ public final class CombatCommands {
         root.then(literal("tag").then(argument("player",EntityArgument.player()).executes(c->run(c,()->tag(EntityArgument.getPlayer(c,"player"),s().config.durationSeconds))).then(argument("seconds",IntegerArgumentType.integer(1,86400)).executes(c->run(c,()->tag(EntityArgument.getPlayer(c,"player"),IntegerArgumentType.getInteger(c,"seconds")))))));
         root.then(literal("clear").then(argument("player",StringArgumentType.word()).executes(c->run(c,()->{UUID id=target(StringArgumentType.getString(c,"player"));s().ledger.clear(id);s().save();reply(c,"Tag cleared.");}))));
         root.then(literal("pardon").then(argument("player",StringArgumentType.word()).executes(c->run(c,()->{UUID id=target(StringArgumentType.getString(c,"player"));s().ledger.clear(id);s().ledger.data.logoutPenalties.remove(id);s().save();reply(c,"Logout penalty pardoned.");}))));
+        root.then(SellMarket.admin());
         d.register(root);
         var event=literal("eventhost").requires(source->CombatService.allowed(source,KingdomsCombat.service==null?"kingdomscombat.eventhost":s().config.eventHostPermission,KingdomsCombat.service==null?2:s().config.adminLevel));
         event.executes(c->run(c,()->reply(c,s().events.description())));

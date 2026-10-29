@@ -28,7 +28,9 @@
     "BalanceCommandAccessor",
     "ArenaBoundEquipmentMixin",
     "ArenaMinecartStorageMixin",
-    "ArenaHopperMinecartMixin"
+    "ArenaHopperMinecartMixin",
+    "EconomySellMenuMixin",
+    "EconomyShopSellMixin"
   ],
   "injectors": {
     "defaultRequire": 1

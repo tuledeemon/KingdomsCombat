@@ -14,6 +14,7 @@ public abstract class ArenaServerPlayerMixin {
     @Inject(method="die",at=@At("HEAD"),cancellable=true)
     private void defeat(DamageSource source,CallbackInfo ci){
         ServerPlayer p=(ServerPlayer)(Object)this;
+        if(KingdomsCombat.service!=null)KingdomsCombat.service.sellMarket.beforeDamage(p);
         if(KingdomsCombat.service==null||!KingdomsCombat.service.arenas.reserved(p.getUUID()))return;
         try{KingdomsCombat.service.arenas.defeat(p,source);}
         catch(RuntimeException error){p.setHealth(1);KingdomsCombat.LOG.error("Arena defeat paused; original inventory backup retained for {}",p.getUUID(),error);}

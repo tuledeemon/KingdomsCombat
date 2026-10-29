@@ -4,6 +4,8 @@ A separate **server-only Fabric 26.2 addon** for [Kingdoms](https://github.com/t
 
 **No client mod or resource pack is needed.** Custom menus, messages, titles and the countdown use Kingdoms' small-caps style.
 
+**1.6.0:** Add `/sell` with a close-to-sell menu, server-wide per-item supply pressure and real-time recovery. Reject named/unique items, preserve deposits and queued payments across saves/restarts, and reduce leaf starting prices to $1. EconomyCraft shop selling opens the same market. [Settings and commands](SERVER_UTILITIES_GUIDE.md#dynamic-sell-market).
+
 **1.5.3:** Fix arena elimination running before totems. Totems now activate normally in either hand; own-gear inventory recovery still restores consumed items.
 
 **1.5.2:** Active fighters can place temporary minecarts during matches. Fix stone/wooden buttons staying pressed. Carts clean up after the match, with storage transfers and cart loot blocked.

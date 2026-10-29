@@ -31,6 +31,7 @@ public final class CombatService {
     public final StaffService staff;
     public final PlaytimeRoles playtimeRoles;
     public final BalanceTop balanceTop;
+    public final SellMarket sellMarket;
     public CombatConfig config;
     public final Path configFile,stateFile;
     private final LongSupplier clock;
@@ -48,7 +49,7 @@ public final class CombatService {
         ledger=new TagLedger(CombatStore.read(stateFile,TagLedger.Data.class,new TagLedger.Data()));ledger.prune(now());
         if(!trySave())throw new IllegalStateException("Combat state is not writable; refusing to start without durable logout protection: "+stateFile);
         events=new HostedEvents(this,stateFile.resolveSibling("event.json"));
-        permissions=new StaffPermissions(this);staff=new StaffService(this);arenas=new ArenaService(this);playtimeRoles=new PlaytimeRoles(this);balanceTop=new BalanceTop(this);
+        permissions=new StaffPermissions(this);staff=new StaffService(this);arenas=new ArenaService(this);playtimeRoles=new PlaytimeRoles(this);balanceTop=new BalanceTop(this);sellMarket=new SellMarket(this);
     }
     public long now(){return clock.getAsLong();}
     public static boolean allowed(CommandSourceStack source,String permission,int level){boolean fallback=admin(source,level);return !permission.isBlank()&&FabricLoader.getInstance().isModLoaded("fabric-permissions-api-v0")?PermissionHook.allowed(source,permission,fallback):fallback;}
@@ -86,7 +87,7 @@ public final class CombatService {
     public void tick(){
         ticks++;if(stopping)return;
         staff.tick();
-        playtimeRoles.tick();
+        playtimeRoles.tick();sellMarket.tick();
         for(ServerPlayer player:server.getPlayerList().getPlayers())CombatStorage.enforce(player);
         try{arenas.tick();}catch(RuntimeException failure){if(ticks%100==0)KingdomsCombat.LOG.error("Arena paused; recovery backups retained",failure);}
         VoicePolicy.refresh(this);
@@ -146,6 +147,7 @@ public final class CombatService {
     public void join(ServerPlayer p){
         staffModes.remove(p.getUUID());
         permissions.join(p);staff.join(p);permissions.refreshCommands(p);arenas.join(p);
+        sellMarket.join(p);
         UUID penalty=ledger.data.logoutPenalties.get(p.getUUID());
         if(penalty!=null){
             if(!penalty.equals(((PenaltyReceipt)p).combat$penaltyReceipt())){
@@ -228,5 +230,5 @@ public final class CombatService {
     }
     public void reload(){CombatConfig next=CombatStore.read(configFile,CombatConfig.class,new CombatConfig());next.validate();if(config.arenaEnabled&&!next.arenaEnabled&&arenas.active())arenas.cancel();config=next;playtimeRoles.reset();CombatStore.write(configFile,next);}
     public void replaceConfig(CombatConfig next){next.validate();if(config.arenaEnabled&&!next.arenaEnabled&&arenas.active())arenas.cancel();CombatStore.write(configFile,next);config=next;playtimeRoles.reset();}
-    public void stop(){stopping=true;playtimeRoles.stop();balanceTop.stop();arenas.stop();VoicePolicy.reset();staff.stop();events.hide();save();}
+    public void stop(){stopping=true;playtimeRoles.stop();balanceTop.stop();sellMarket.stop();arenas.stop();VoicePolicy.reset();staff.stop();events.hide();save();}
 }
