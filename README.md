@@ -4,9 +4,7 @@ A separate **server-only Fabric 26.2 addon** for [Kingdoms](https://github.com/t
 
 **No client mod or resource pack is needed.** Custom menus, messages, titles and the countdown use Kingdoms' small-caps style.
 
-**1.4.1:** Add a separate long-window timing check for slow repeated attacks, including one hit per second. Existing configurations enable it automatically; normal clicking is not suspicious just for exceeding 4 CPS.
-
-**1.4.0:** Staff-only suspicion flags for sustained clicking patterns and repeated movement/farming loops. A ranked review menu shows recent evidence and uses real player heads throughout staff screens. Detection never punishes or blocks actions. [Review menu and settings](FLAGS_GUIDE.md).
+**1.5.0:** Automatic Discord roles for recorded playtime, combat-tag ender-chest restrictions and a paginated player-wallet `/baltop`. Remove the entire suspicion-flag system while retaining player heads in staff menus. [Role setup and leaderboard](SERVER_UTILITIES_GUIDE.md).
 
 **1.3.4:** Optional own-gear tournaments and duels back up personal equipment and restore original items and supplies afterward. Every round clears effects and fully resets health, food, saturation and exhaustion before gates open. [Commands and limitations](TOURNAMENTS_GUIDE.md#choose-the-gear-mode).
 

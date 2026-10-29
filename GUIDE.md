@@ -205,3 +205,9 @@ Version 1.1.1 serializes writes and uses a unique temporary file for each save. 
 Ordinary restricted teleports remain blocked during the outage. A logout death whose penalty cannot be saved is deferred; the pending penalty stays in memory for retry. A player with that pending penalty cannot finish recovery/login until the journal can be saved. Once storage works, the changes are saved and normal penalty recovery resumes. Existing bypass settings still apply to teleport access.
 
 Correct disk-space, path or filesystem-permission problems shown in the server log. Do not delete `state.json` or its pending penalties. Unsaved in-memory changes cannot survive a forced shutdown during a continuing storage outage. Startup refuses an unreadable or unwritable state file rather than silently replacing it. Legacy `state.json.tmp` files are left untouched for manual recovery; new saves do not reuse them.
+
+## Ender chests during PvP combat
+
+Ender chests cannot be opened while a player's PvP combat tag is active. Receiving a tag closes an already-open ender chest, and stale menu clicks are refused. This includes commands/mods that open the player's ordinary ender-chest inventory. Inventory contents remain unchanged.
+
+Ordinary chests remain available under their existing protection rules. War-only and AirDrop-only teleport restrictions do not block ender chests. Staff mode retains its existing combat exemption. Set `blockEnderChestsInCombat` to `false` with `/combatadmin set` to disable this rule.

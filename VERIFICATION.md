@@ -1,4 +1,10 @@
-# Release verification — 1.4.1
+# Release verification — 1.5.0
+
+87 unit tests and 270 dedicated-server checks passed with Kingdoms 1.12.2 and EconomyCraft 1.10.0. Native checks cover the exact four-hour saved-stat threshold, deduplicated queued reward work, retry timing and cancellation of superseded queued work; the role setup command; native/command-provided ender-chest opening, closing an existing inventory, preserving contents, ordinary chests, war-only access and the disable toggle; actual `/baltop` command takeover/page opening without balance mutations; and absence of the removed staff flag command. Unit checks cover ordering, ties, caps, long balances, eligibility and configuration validation.
+
+Discord grants use a fake gateway in tests. Actual role assignment, bot permissions and guild hierarchy require verification against the running Discord Integration bot. No live Discord roles were changed. No graphical-client or production-server test was performed. The release JAR excludes the removed flag classes/settings and bundled dependency/test JARs.
+
+## Previous release — 1.4.1
 
 95 unit tests and 274 dedicated-server checks passed with Kingdoms 1.12.2. New tests verify sustained one-hit-per-second attacks produce slow-timing evidence, tick-aligned slow input is eligible, ordinary jitter/faster input/bursts fail the slow classifier, and existing configurations enable the new pipeline while preserving the old faster threshold. Existing checks continue passing. No graphical-client or production trial; heuristic false-positive/recall rates remain unmeasured on real player sessions.
 

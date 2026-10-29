@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.5.0
+
+- Add optional linked-account Discord role grants from recorded vanilla playtime, configured atomically by an admin command. Reuse Discord Integration, preserve other roles and perform bounded/retried network work off the server thread.
+- Prevent opening/using ender chests during PvP tags and close an already-open inventory on tagging. Preserve contents and ordinary chest access; add an independent configuration toggle.
+- Replace `/baltop` with a paginated wallet menu backed by offline-inclusive EconomyCraft snapshots, shared caching and background sorting.
+- Completely remove suspicion checks, packet observers, alerts, evidence storage access, commands, menus and configuration. Retain player heads in staff screens.
+
 ## 1.4.1
 
 - Add independent configurable low-rate attack timing analysis, enabled for existing configurations without changing the faster timing gate. Require several long, consistent windows and preserve mining/use/lag exemptions.

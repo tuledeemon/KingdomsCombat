@@ -5,9 +5,6 @@
   "mixins": [
     "AirDropsAccessor",
     "CommandMixin",
-    "FlagSwingPacketMixin",
-    "FlagNetworkMixin",
-    "FlagMiningMixin",
     "MovementItemMixin",
     "LungeMixin",
     "HudMixin",
@@ -26,7 +23,9 @@
     "ArenaServerPlayerMixin",
     "ArenaPickupMixin",
     "ArenaKitEntityMixin",
-    "ArenaArrowMixin"
+    "ArenaArrowMixin",
+    "CombatEnderChestMixin",
+    "BalanceCommandAccessor"
   ],
   "injectors": {
     "defaultRequire": 1

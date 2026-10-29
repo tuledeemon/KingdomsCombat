@@ -4,17 +4,12 @@ import java.util.*;
 
 public final class CombatConfig {
     public boolean enabled=true;
-    public boolean antiCheatEnabled=true,antiCheatClicks=true,antiCheatMacros=true,antiCheatLog=true;
-    public int antiCheatAlertCooldownSeconds=120,antiCheatHistoryLimit=500,antiCheatRetentionDays=14;
-    public int antiCheatClickSamples=128,antiCheatClickWindows=3;
-    public boolean antiCheatSlowTiming=true;
-    public int antiCheatSlowSamples=64,antiCheatSlowWindows=3;
-    public double antiCheatSlowMinCps=.5,antiCheatSlowMaxCps=2,antiCheatSlowStdMs=3;
-    public double antiCheatMaxCps=24,antiCheatRegularMinCps=4,antiCheatRegularStdMs=1.2;
-    public int antiCheatMacroSampleTicks=10,antiCheatMacroMinPeriod=24,antiCheatMacroMaxPeriod=120,antiCheatMacroRepeats=5;
-    public double antiCheatMacroMatch=.98;
-    public int antiCheatRankingHours=24;
-    public int antiCheatMaxTickMs=120,antiCheatLagGraceSeconds=5;
+    public boolean blockEnderChestsInCombat=true;
+    public boolean playtimeRoleEnabled=false;
+    public String playtimeRoleId="";
+    public double playtimeRoleHours=4;
+    public int playtimeRoleCheckSeconds=300,playtimeRoleRetrySeconds=900,playtimeRoleQueueLimit=20;
+    public int baltopCacheSeconds=30,baltopMaxEntries=10000,baltopPageSize=28;
 
     public boolean arenaEnabled=true,arenaBuildAllowed=true,arenaVoiceRestricted=true,staffMuteVoice=true,arenaAutoNext=true,arenaFluidFlow=true,arenaSpectatorsHearStaff=true;
     public int arenaCountdownSeconds=10,arenaBetweenMatchesSeconds=15,arenaMaxFightSeconds=600;
@@ -62,11 +57,7 @@ public final class CombatConfig {
     public List<String> blockedCommands=new ArrayList<>(List.of("home","phome","publichome","warp","spawn","tp","teleport","tpo","tphere","tpoffline","tpall","tpa","tpahere","tpaall","tpaccept","tpyes","rtp","back","hub","lobby","server"));
     public List<String> mutedCommands=new ArrayList<>(List.of("me","say","tell","msg","w","teammsg","tm","whisper","message","reply","r"));
     public void validate(){
-        if(antiCheatSlowSamples<32||antiCheatSlowSamples>512||antiCheatSlowWindows<2||antiCheatSlowWindows>20||!Double.isFinite(antiCheatSlowMinCps)||antiCheatSlowMinCps<.1||antiCheatSlowMinCps>2||!Double.isFinite(antiCheatSlowMaxCps)||antiCheatSlowMaxCps<antiCheatSlowMinCps||antiCheatSlowMaxCps>4||!Double.isFinite(antiCheatSlowStdMs)||antiCheatSlowStdMs<=0||antiCheatSlowStdMs>20)throw new IllegalArgumentException("Invalid slow-click timing thresholds.");
-        if(antiCheatAlertCooldownSeconds<1||antiCheatAlertCooldownSeconds>86400||antiCheatHistoryLimit<1||antiCheatHistoryLimit>10000||antiCheatRetentionDays<1||antiCheatRetentionDays>365||antiCheatClickSamples<32||antiCheatClickSamples>512||antiCheatClickWindows<2||antiCheatClickWindows>20)throw new IllegalArgumentException("Invalid anti-cheat alert/click limits.");
-        if(!Double.isFinite(antiCheatMaxCps)||antiCheatMaxCps<10||antiCheatMaxCps>100||!Double.isFinite(antiCheatRegularMinCps)||antiCheatRegularMinCps<2||antiCheatRegularMinCps>20||!Double.isFinite(antiCheatRegularStdMs)||antiCheatRegularStdMs<=0||antiCheatRegularStdMs>10)throw new IllegalArgumentException("Invalid anti-cheat click thresholds.");
-        if(antiCheatMacroSampleTicks<5||antiCheatMacroSampleTicks>40||antiCheatMacroMinPeriod<12||antiCheatMacroMaxPeriod<antiCheatMacroMinPeriod||antiCheatMacroMaxPeriod>200||antiCheatMacroRepeats<3||antiCheatMacroRepeats>8||!Double.isFinite(antiCheatMacroMatch)||antiCheatMacroMatch<.9||antiCheatMacroMatch>1)throw new IllegalArgumentException("Invalid anti-cheat macro thresholds.");
-        if(antiCheatRankingHours<1||antiCheatRankingHours>720||antiCheatMaxTickMs<60||antiCheatMaxTickMs>1000||antiCheatLagGraceSeconds<1||antiCheatLagGraceSeconds>120)throw new IllegalArgumentException("Invalid anti-cheat ranking/lag limits.");
+        if(playtimeRoleId==null||!playtimeRoleId.isEmpty()&&!playtimeRoleId.matches("[0-9]{16,20}")||!Double.isFinite(playtimeRoleHours)||playtimeRoleHours<.01||playtimeRoleHours>20000||playtimeRoleCheckSeconds<30||playtimeRoleCheckSeconds>86400||playtimeRoleRetrySeconds<30||playtimeRoleRetrySeconds>86400||playtimeRoleQueueLimit<1||playtimeRoleQueueLimit>100||baltopCacheSeconds<5||baltopCacheSeconds>3600||baltopMaxEntries<10||baltopMaxEntries>100000||baltopPageSize<1||baltopPageSize>28)throw new IllegalArgumentException("Invalid playtime-role or balance leaderboard settings.");
 
         if(arenaCountdownSeconds<3||arenaCountdownSeconds>120||arenaBetweenMatchesSeconds<1||arenaBetweenMatchesSeconds>600||arenaMaxFightSeconds<10||arenaMaxFightSeconds>7200||arenaMaxTeams<2||arenaMaxTeams>256||arenaMaxGates<1||arenaMaxGates>4096||arenaMaxChangedBlocks<1||arenaMaxChangedBlocks>100000||arenaMaxRegionVolume<1||arenaMaxRegionVolume>16000000||arenaMaxRegionChunks<1||arenaMaxRegionChunks>1024||arenaEloStart<0||arenaEloStart>100000||arenaEloK<1||arenaEloK>1000||arenaEloScale<1||arenaEloScale>10000)throw new IllegalArgumentException("Invalid arena settings.");
         if(arenaAllowedCommands==null||arenaAllowedCommands.size()>128||arenaAllowedCommands.stream().anyMatch(v->v==null||v.isBlank()||v.length()>128))throw new IllegalArgumentException("Invalid arena command list.");
