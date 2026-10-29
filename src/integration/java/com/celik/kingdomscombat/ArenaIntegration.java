@@ -63,6 +63,14 @@ final class ArenaIntegration {
             check.accept(!level.getFluidState(water.below()).isEmpty()&&!level.getFluidState(lava.below()).isEmpty(),"native water and lava ticks spread inside the arena");
             BlockPos edge=new BlockPos(arena.data.setup.region.maxX,162,z+6);check.accept(!Protection.fluid(level,edge,edge.east())&&!Protection.fluid(level,edge.east(),edge),"arena liquids cannot flow out or be poured in across its boundary");
             check.accept(!Protection.explosion(level,changed,changed,a.getUUID()),"arena prevents explosion block drops and terrain changes before the native callback");
+            var liveMatch=arena.data.match;var originalBackup=arena.data.snapshots.get(b.getUUID());int originalElo=arena.rating(b.getUUID()).elo;
+            for(var hand:List.of(net.minecraft.world.InteractionHand.OFF_HAND,net.minecraft.world.InteractionHand.MAIN_HAND)){
+                b.setItemInHand(hand,new ItemStack(Items.TOTEM_OF_UNDYING));b.setHealth(1);b.setAbsorptionAmount(0);b.invulnerableTime=0;
+                int used=b.getStats().getValue(net.minecraft.stats.Stats.ITEM_USED.get(Items.TOTEM_OF_UNDYING));
+                b.hurtServer(level,a.damageSources().playerAttack(a),1000);
+                check.accept(arena.data.match==liveMatch&&arena.fighter(b.getUUID())&&arena.data.snapshots.get(b.getUUID())==originalBackup&&arena.rating(b.getUUID()).elo==originalElo,"native lethal hit with a "+hand+" totem keeps the fighter, match, backup and Elo intact");
+                check.accept(b.isAlive()&&b.getHealth()==1&&b.getItemInHand(hand).isEmpty()&&b.hasEffect(MobEffects.REGENERATION)&&b.hasEffect(MobEffects.ABSORPTION)&&b.hasEffect(MobEffects.FIRE_RESISTANCE)&&b.getStats().getValue(net.minecraft.stats.Stats.ITEM_USED.get(Items.TOTEM_OF_UNDYING))==used+1,"native "+hand+" totem consumption, recovery effects and usage statistic happen normally");
+            }
             b.invulnerableTime=0;b.hurtServer(level,a.damageSources().playerAttack(a),1000);
             check.accept(b.isAlive()&&!arena.reserved(b.getUUID())&&arena.data.match==null,"native lethal damage eliminates the loser without a death or item drops");
             check.accept(a.getInventory().getItem(9).is(Items.DIAMOND)&&a.getInventory().getItem(9).getCount()==7&&a.getItemBySlot(EquipmentSlot.FEET).is(Items.IRON_BOOTS)&&a.getHealth()==16&&a.experienceLevel==12&&a.getEffect(MobEffects.SPEED).getAmplifier()==1,"match completion restores original inventory, armor, health, XP and effects");
@@ -102,10 +110,12 @@ final class ArenaIntegration {
         }finally{cfg.arenaAutoNext=auto;KingdomsCombat.service=service;arena.data=saved;arena.save();VoicePolicy.reset();for(ServerPlayer p:players)CombatIntegration.remove(service.server,p);}
     }
     private static void ownGear(ArenaService arena,ServerPlayer a,ServerPlayer b,long[] time,BiConsumer<Boolean,String> check)throws Exception{
+        ItemStack previousOffhandA=a.getOffhandItem().copy(),previousOffhandB=b.getOffhandItem().copy();
         arena.data.setup.kit.clear();arena.setGear(true);
         ItemStack sword=new ItemStack(Items.DIAMOND_SWORD);sword.setDamageValue(17);sword.set(DataComponents.CUSTOM_NAME,Component.literal("Personal sword"));a.getInventory().setItem(0,sword);a.getInventory().setItem(8,new ItemStack(Items.COOKED_BEEF,12));b.getInventory().setItem(0,new ItemStack(Items.BOW));
         KingdomsMod.service.artifacts.give(a,"thunder_axe");int protectedSlot=java.util.stream.IntStream.range(0,a.getInventory().getContainerSize()).filter(i->Artifacts.marked(a.getInventory().getItem(i))).findFirst().orElseThrow();ItemStack protectedItem=a.getInventory().getItem(protectedSlot).copy();KingdomsMod.service.artifacts.give(a,"guardian_angel");int guardianSlot=java.util.stream.IntStream.range(0,9).filter(i->a.getInventory().getItem(i).is(Items.HEART_OF_THE_SEA)).findFirst().orElseThrow();
         a.removeAllEffects();a.addEffect(new MobEffectInstance(MobEffects.POISON,1000,1));a.setHealth(3);a.getFoodData().setFoodLevel(5);a.getFoodData().setSaturation(0);a.getFoodData().addExhaustion(8);
+        a.setItemInHand(net.minecraft.world.InteractionHand.OFF_HAND,new ItemStack(Items.TOTEM_OF_UNDYING));b.setItemInHand(net.minecraft.world.InteractionHand.OFF_HAND,new ItemStack(Items.TOTEM_OF_UNDYING));
         arena.open("Own gear integration",1);arena.add(List.of(a));arena.add(List.of(b));arena.start();prepareLoaded(arena);
         check.accept(arena.data.event.useOwnGear&&arena.data.setup.kit.isEmpty()&&a.getMainHandItem().is(Items.DIAMOND_SWORD)&&a.getMainHandItem().getDamageValue()==17&&b.getMainHandItem().is(Items.BOW),"own-gear rounds use each fighter's actual loadout without requiring an admin kit");
         check.accept(Artifacts.marked(a.getInventory().getItem(protectedSlot))&&KingdomsMod.service.artifacts.usable(a.getInventory().getItem(protectedSlot))!=null&&!arena.data.snapshots.get(a.getUUID()).artifacts.isEmpty(),"own-gear fighters can use authenticated artifacts while their record state is durably backed up");
@@ -116,10 +126,16 @@ final class ArenaIntegration {
         check.accept(arena.fighter(a.getUUID())&&a.getActiveEffects().isEmpty()&&a.getHealth()==a.getMaxHealth()&&a.getFoodData().getFoodLevel()==20&&a.getFoodData().getSaturationLevel()==20,"gate opening resets countdown effects, health, hunger and exhaustion immediately before combat");
         check.accept(CombatStore.read(arena.file,Data.class,null).event.useOwnGear,"own-gear mode is saved with the tournament");
         a.getInventory().setSelectedSlot(guardianSlot);var guardian=KingdomsMod.service.artifacts.usable(a.getMainHandItem());int charges=guardian.uses;KingdomsMod.service.artifacts.use(a,net.minecraft.world.InteractionHand.MAIN_HAND);check.accept(guardian.uses==charges-1,"personal Guardian Angel can activate and spend a charge during an own-gear match");a.getInventory().setSelectedSlot(0);KingdomsMod.service.artifacts.destroyed(a.getInventory().getItem(protectedSlot));a.getInventory().setItem(protectedSlot,ItemStack.EMPTY);
-        a.getMainHandItem().setDamageValue(100);a.getInventory().getItem(8).shrink(5);arena.eliminate(b,"fixture defeat");
+        a.setHealth(1);a.invulnerableTime=0;a.hurtServer(a.level(),b.damageSources().playerAttack(b),1000);
+        check.accept(arena.fighter(a.getUUID())&&a.getOffhandItem().isEmpty()&&a.getHealth()==1,"own-gear totem activates without eliminating its wearer");
+        a.getMainHandItem().setDamageValue(100);a.getInventory().getItem(8).shrink(5);
+        b.invulnerableTime=0;b.hurtServer(b.level(),b.damageSources().genericKill(),1000);
+        check.accept(arena.data.match==null&&b.isAlive()&&!arena.reserved(b.getUUID())&&b.getOffhandItem().is(Items.TOTEM_OF_UNDYING),"totem-bypassing damage still defeats a fighter safely and restores original items");
+        check.accept(a.getOffhandItem().is(Items.TOTEM_OF_UNDYING)&&!a.hasEffect(MobEffects.REGENERATION),"consumed own-gear totem restores from escrow and arena recovery effects do not leak out");
         check.accept(ItemStack.isSameItemSameComponents(a.getMainHandItem(),sword)&&a.getMainHandItem().getDamageValue()==17&&a.getInventory().getItem(8).getCount()==12&&a.getHealth()==3,"round completion restores personal item components, original wear, consumed supplies and prior health");
         check.accept(com.google.gson.JsonParser.parseString(arena.encode(a.getInventory().getItem(protectedSlot))).equals(com.google.gson.JsonParser.parseString(arena.encode(protectedItem)))&&KingdomsMod.service.artifacts.usable(a.getInventory().getItem(protectedSlot))!=null,"artifacts broken and retired during a match return authenticated with their saved abilities intact");
         check.accept(KingdomsMod.service.artifacts.usable(a.getInventory().getItem(guardianSlot)).uses==charges,"Guardian Angel charges restore from the saved artifact record after the round");
+        a.setItemInHand(net.minecraft.world.InteractionHand.OFF_HAND,previousOffhandA);b.setItemInHand(net.minecraft.world.InteractionHand.OFF_HAND,previousOffhandB);
     }
     private static void prepareLoaded(ArenaService arena)throws Exception{if(arena.data.match!=null&&arena.data.match.phase==MatchPhase.PREPARING){var prepare=ArenaService.class.getDeclaredMethod("prepare",Match.class);prepare.setAccessible(true);prepare.invoke(arena,arena.data.match);}}
     private ArenaIntegration(){}

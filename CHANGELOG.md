@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.5.3
+
+- Handle arena defeat at the server-player death entry point, after vanilla totem protection, instead of the earlier Fabric death-permission event.
+- Preserve normal totem consumption, recovery effects, usage statistics and current-match participation in both hands and gear modes. Restore consumed personal totems with the original inventory afterward. Totem-bypassing damage, no-totem defeat and disconnect forfeits retain safe recovery.
+
 ## 1.5.2
 
 - Allow current active fighters to place match-owned minecarts, including TNT, furnace and storage variants. Add `arenaMinecarts`; keep countdown, waiting entrants and outside-boundary placement protected.

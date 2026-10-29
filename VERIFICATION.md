@@ -1,4 +1,8 @@
-# Release verification — 1.5.2
+# Release verification — 1.5.3
+
+87 unit tests and 306 dedicated-server checks passed with Kingdoms 1.12.2. Native lethal hits exercise main-hand and offhand totems, vanilla consumption, recovery effects and usage statistics, unchanged fighter/match/backup/Elo on activation, own-gear totem consumption and escrow recovery, and totem-bypassing damage. Existing no-totem defeat, bound equipment, disconnect recovery, minecarts and button checks remain passing. The new offhand regression test failed against 1.5.2 before the fix. No graphical-client or production-server test.
+
+## Previous release — 1.5.2
 
 87 unit tests and 299 dedicated-server checks passed with Kingdoms 1.12.2. Native item-use and spawn-result checks cover ordinary, TNT, chest, hopper and furnace carts, fighter provenance, countdown/waiting denial, the placement toggle, non-storage interaction, storage/menu/automation denial, suppressed cart/content drops and cleanup beyond the immediate reset area. Native stone/wooden button presses and scheduled ticks verify release. Existing fluids, terrain reset, bound equipment, inventory recovery, economy and combat checks remain passing. Test-only spawn observation handles asynchronous chunk visibility and is excluded from the release. No graphical-client or production-server test.
 
