@@ -67,6 +67,8 @@ public final class ArenaService {
     public boolean admin(ServerPlayer p){return service.staffMode(p)||CombatService.allowed(p.createCommandSourceStack(),service.config.adminPermission,service.config.adminLevel);}
     public boolean build(ServerPlayer p,Level level,BlockPos pos){return !inside(level,pos)||!reserved(p.getUUID())&&admin(p)||service.config.arenaBuildAllowed&&fighter(p.getUUID())&&inside(p.level(),p.blockPosition());}
     public boolean canInteract(ServerPlayer p,BlockPos pos){if(reserved(p.getUUID()))return fighter(p.getUUID())&&inside(p.level(),pos)&&p.level().getBlockEntity(pos)==null;return !inside(p.level(),pos)||admin(p);}
+    public static boolean temporaryMinecart(Entity entity){return entity instanceof net.minecraft.world.entity.vehicle.minecart.AbstractMinecart&&entity.entityTags().contains("kingdomscombat_arena");}
+    public boolean useEntity(ServerPlayer p,Entity entity){if(temporaryMinecart(entity))return fighter(p.getUUID())&&entityActive(entity)&&inside(p.level(),p.blockPosition())&&inside(entity.level(),entity.blockPosition())&&!(entity instanceof net.minecraft.world.entity.vehicle.minecart.AbstractMinecartContainer);return !reserved(p.getUUID())&&canInteract(p,entity.blockPosition());}
     public Boolean pvp(Entity target,DamageSource source){
         if(!(target instanceof ServerPlayer victim))return null;
         UUID owner=Protection.owner(source.getEntity());if(owner==null)owner=Protection.owner(source.getDirectEntity());
@@ -87,6 +89,7 @@ public final class ArenaService {
         if(!inside(level,pos))return context==null||context.actor()==null||!reserved(context.actor());
         BlockState old=level.getBlockState(pos);
         if(context!=null&&context.level()==level&&(context.cause()==Protection.Cause.FLUID||context.cause()==Protection.Cause.BLOCK&&(!old.getFluidState().isEmpty()||!next.getFluidState().isEmpty()))){if(!fluid(level,context.origin(),pos)||old.hasBlockEntity()||next.hasBlockEntity())return old.equals(next);return data.match==null||remember(level,pos);}
+        if(context!=null&&context.level()==level&&context.cause()==Protection.Cause.BLOCK&&context.origin().equals(pos)&&old.getBlock() instanceof net.minecraft.world.level.block.ButtonBlock&&old.getBlock()==next.getBlock()&&old.getValue(net.minecraft.world.level.block.state.properties.BlockStateProperties.POWERED)&&!next.getValue(net.minecraft.world.level.block.state.properties.BlockStateProperties.POWERED)&&old.setValue(net.minecraft.world.level.block.state.properties.BlockStateProperties.POWERED,false).equals(next))return data.match==null||remember(level,pos);
         if(context==null||context.cause()!=Protection.Cause.PLAYER||!(context.entity() instanceof ServerPlayer actor)||!build(actor,level,pos))return level.getBlockState(pos).equals(next);
         if(!reserved(actor.getUUID()))return true;
         if(level.getBlockEntity(pos)!=null||next.hasBlockEntity())return false;
@@ -95,6 +98,11 @@ public final class ArenaService {
     public boolean admit(Entity entity){
         var context=Protection.current();boolean kit=context!=null&&context.actor()!=null&&reserved(context.actor());
         if(!kit&&entity instanceof net.minecraft.world.entity.projectile.Projectile projectile&&projectile.getOwner()!=null)kit=reserved(projectile.getOwner().getUUID());
+        if(entity instanceof net.minecraft.world.entity.vehicle.minecart.AbstractMinecart&&(kit||inside(entity.level(),entity.blockPosition())&&data.match!=null)){
+            if(!service.config.arenaMinecarts||context==null||context.cause()!=Protection.Cause.PLAYER||!(context.entity() instanceof ServerPlayer actor)||!fighter(actor.getUUID())||!inside(actor.level(),actor.blockPosition())||!inside(entity.level(),entity.blockPosition()))return false;
+            if(entity instanceof net.minecraft.world.entity.vehicle.minecart.AbstractMinecartContainer container){container.setContainerLootTable(null);container.clearItemStacks();}
+            entity.addTag("kingdomscombat_arena");entity.addTag("kingdomscombat_match_"+data.match.id);return true;
+        }
         if(!kit)return true;
         if(!(entity instanceof net.minecraft.world.entity.projectile.Projectile)&&!(entity instanceof net.minecraft.world.entity.item.ItemEntity)&&!(entity instanceof net.minecraft.world.entity.AreaEffectCloud)&&!(entity instanceof net.minecraft.world.entity.ExperienceOrb))return false;
         if(entity instanceof net.minecraft.world.entity.projectile.arrow.AbstractArrow arrow)arrow.pickup=net.minecraft.world.entity.projectile.arrow.AbstractArrow.Pickup.DISALLOWED;

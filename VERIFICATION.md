@@ -1,4 +1,8 @@
-# Release verification — 1.5.1
+# Release verification — 1.5.2
+
+87 unit tests and 299 dedicated-server checks passed with Kingdoms 1.12.2. Native item-use and spawn-result checks cover ordinary, TNT, chest, hopper and furnace carts, fighter provenance, countdown/waiting denial, the placement toggle, non-storage interaction, storage/menu/automation denial, suppressed cart/content drops and cleanup beyond the immediate reset area. Native stone/wooden button presses and scheduled ticks verify release. Existing fluids, terrain reset, bound equipment, inventory recovery, economy and combat checks remain passing. Test-only spawn observation handles asynchronous chunk visibility and is excluded from the release. No graphical-client or production-server test.
+
+## Previous release — 1.5.1
 
 87 unit tests and 279 dedicated-server checks passed with Kingdoms 1.12.2. New native checks cover admission while wearing special equipment, actual kit escrow with fair kit health/effects, durable wearer-state snapshots, own-gear bonuses, ordinary inventory/UI removal restrictions, native lethal defeat restoring original state and health, and restart recovery with the exchange scope closed afterward. Existing gear, economy, playtime-role and combat-storage checks remain green. No graphical-client or production-server test.
 

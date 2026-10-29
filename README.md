@@ -4,6 +4,8 @@ A separate **server-only Fabric 26.2 addon** for [Kingdoms](https://github.com/t
 
 **No client mod or resource pack is needed.** Custom menus, messages, titles and the countdown use Kingdoms' small-caps style.
 
+**1.5.2:** Active fighters can place temporary minecarts during matches. Fix stone/wooden buttons staying pressed. Carts clean up after the match, with storage transfers and cart loot blocked.
+
 **1.5.1:** Fix tournament entry and recovery with special equipment in both gear modes. Preserve its saved wearer state and normal equipment restrictions.
 
 **1.5.0:** Automatic Discord roles for recorded playtime, combat-tag ender-chest restrictions and a paginated player-wallet `/baltop`. Remove the entire suspicion-flag system while retaining player heads in staff menus. [Role setup and leaderboard](SERVER_UTILITIES_GUIDE.md).

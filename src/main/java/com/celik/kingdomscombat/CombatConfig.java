@@ -11,6 +11,7 @@ public final class CombatConfig {
     public int playtimeRoleCheckSeconds=300,playtimeRoleRetrySeconds=900,playtimeRoleQueueLimit=20;
     public int baltopCacheSeconds=30,baltopMaxEntries=10000,baltopPageSize=28;
 
+    public boolean arenaMinecarts=true;
     public boolean arenaEnabled=true,arenaBuildAllowed=true,arenaVoiceRestricted=true,staffMuteVoice=true,arenaAutoNext=true,arenaFluidFlow=true,arenaSpectatorsHearStaff=true;
     public int arenaCountdownSeconds=10,arenaBetweenMatchesSeconds=15,arenaMaxFightSeconds=600;
     public int arenaMaxTeams=64,arenaMaxGates=512,arenaMaxChangedBlocks=4096,arenaMaxRegionVolume=4000000,arenaMaxRegionChunks=256;

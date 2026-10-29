@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.5.2
+
+- Allow current active fighters to place match-owned minecarts, including TNT, furnace and storage variants. Add `arenaMinecarts`; keep countdown, waiting entrants and outside-boundary placement protected.
+- Allow fighter interaction with temporary non-storage carts. Block storage menus, hopper transfers/collection and cart loot; clean up tagged carts after the match or on later chunk ticks.
+- Allow a button’s scheduled powered-to-unpowered transition through arena protection so stone and wooden buttons release normally. Preserve other environmental block protections and arena terrain reset.
+
 ## 1.5.1
 
 - Allow tournament entry with special equipment, using a narrowly scoped server-only inventory exchange during escrow. Normal equipment restrictions remain active for player interactions.
