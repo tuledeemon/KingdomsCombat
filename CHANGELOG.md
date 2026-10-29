@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.5.1
+
+- Allow tournament entry with special equipment, using a narrowly scoped server-only inventory exchange during escrow. Normal equipment restrictions remain active for player interactions.
+- Save and restore wearer state together with original gear, resynchronize derived health/effects for each loadout and recover it after defeat or restart. Preserve legacy snapshots.
+
 ## 1.5.0
 
 - Add optional linked-account Discord role grants from recorded vanilla playtime, configured atomically by an admin command. Reuse Discord Integration, preserve other roles and perform bounded/retried network work off the server thread.

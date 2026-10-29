@@ -94,6 +94,7 @@ final class ArenaIntegration {
             check.accept(doubles.data.event.phase==Phase.FINISHED&&doubles.data.event.champion.equals(a.getUUID())&&doubles.rating(a.getUUID()).elo>oldA&&doubles.rating(b.getUUID()).elo>oldB,"doubles team victory finishes the tournament and updates the same individual Elo ladder");
             check.accept(doubles.data.snapshots.isEmpty()&&b.getInventory().getItem(9).is(Items.DIAMOND),"doubles completion leaves no kit inventory or pending restoration");
             ownGear(doubles,a,b,time,check);
+            ArenaBoundEquipmentIntegration.run(doubles,a,b,time,check);
             doubles.data=saved;doubles.save();
         }finally{cfg.arenaAutoNext=auto;KingdomsCombat.service=service;arena.data=saved;arena.save();VoicePolicy.reset();for(ServerPlayer p:players)CombatIntegration.remove(service.server,p);}
     }

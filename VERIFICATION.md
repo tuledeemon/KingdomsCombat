@@ -1,4 +1,8 @@
-# Release verification — 1.5.0
+# Release verification — 1.5.1
+
+87 unit tests and 279 dedicated-server checks passed with Kingdoms 1.12.2. New native checks cover admission while wearing special equipment, actual kit escrow with fair kit health/effects, durable wearer-state snapshots, own-gear bonuses, ordinary inventory/UI removal restrictions, native lethal defeat restoring original state and health, and restart recovery with the exchange scope closed afterward. Existing gear, economy, playtime-role and combat-storage checks remain green. No graphical-client or production-server test.
+
+## Previous release — 1.5.0
 
 87 unit tests and 270 dedicated-server checks passed with Kingdoms 1.12.2 and EconomyCraft 1.10.0. Native checks cover the exact four-hour saved-stat threshold, deduplicated queued reward work, retry timing and cancellation of superseded queued work; the role setup command; native/command-provided ender-chest opening, closing an existing inventory, preserving contents, ordinary chests, war-only access and the disable toggle; actual `/baltop` command takeover/page opening without balance mutations; and absence of the removed staff flag command. Unit checks cover ordering, ties, caps, long balances, eligibility and configuration validation.
 

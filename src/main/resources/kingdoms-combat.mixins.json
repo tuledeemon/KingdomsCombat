@@ -25,7 +25,8 @@
     "ArenaKitEntityMixin",
     "ArenaArrowMixin",
     "CombatEnderChestMixin",
-    "BalanceCommandAccessor"
+    "BalanceCommandAccessor",
+    "ArenaBoundEquipmentMixin"
   ],
   "injectors": {
     "defaultRequire": 1

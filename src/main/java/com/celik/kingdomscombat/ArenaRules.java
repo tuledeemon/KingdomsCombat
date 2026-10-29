@@ -64,7 +64,8 @@ public final class ArenaRules {
         public String food,mode;
         public float health,absorption,xpProgress;
         public int xpLevel,xpTotal,selected,fire,air;
-        public boolean restoring;
+        public boolean restoring,boundStateSaved;
+        public String boundState;
     }
     public static final class Data {
         public int schemaVersion=1;
