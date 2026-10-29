@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.6.1
+
+- Add public `/worth <itemname>` and held-item `/worth` commands, including namespaced IDs, spaces/underscores, configured price-key suggestions and console lookup.
+- Quote live unit, marginal full-stack and held-amount totals through the same validation and pricing path as `/sell`, without mutating market state, inventory or wallets. Show the starting unit price and before-tribute estimate notice. Add the independent `kingdomscombat.worth` permission.
+
 ## 1.6.0
 
 - Add a public `/sell` input menu that sells on close, quotes the batch total and supports cancellation/withdrawal. Replace the old root/subcommands and redirect EconomyCraft sell-menu/shop-sell entry points into the same market.

@@ -1,5 +1,5 @@
 plugins { id 'net.fabricmc.fabric-loom' version '1.16.3' }
-version = '1.6.0'
+version = '1.6.1'
 group = 'com.celik.kingdomscombat'
 base { archivesName = 'kingdoms-combat' }
 repositories { mavenCentral() }

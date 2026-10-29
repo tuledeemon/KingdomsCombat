@@ -24,6 +24,7 @@ final class SellIntegration {
             var openItems=com.reazip.economycraft.shop.ShopUi.class.getDeclaredMethod("openItems",ServerPlayer.class,com.reazip.economycraft.EconomyManager.class,String.class);openItems.setAccessible(true);openItems.invoke(null,p,manager,"resources");
             Object shop=p.containerMenu;var handleSell=shop.getClass().getDeclaredMethod("handleSell",com.reazip.economycraft.PriceRegistry.PriceEntry.class,int.class);handleSell.setAccessible(true);handleSell.invoke(shop,manager.getPrices().resolve(new ItemStack(Items.DIAMOND)),1);
             check.accept(p.containerMenu instanceof SellMarket.SellMenu,"shop selling routes into the custom market instead of bypassing supply pressure and named-item checks");p.closeContainer();
+            WorthIntegration.run(service,p,time,check);
             ItemStack named=new ItemStack(Items.DIAMOND,3);named.set(DataComponents.CUSTOM_NAME,Component.literal("Keep me"));p.getInventory().setItem(9,named);
             m.open(p);SellMarket.SellMenu menu=(SellMarket.SellMenu)p.containerMenu;menu.clicked(36,0,ContainerInput.PICKUP,p);
             check.accept(p.getInventory().getItem(9).getCount()==3&&menu.input.getItem(0).isEmpty(),"native sell menu rejects named stacks without moving or deleting them");

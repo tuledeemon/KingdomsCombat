@@ -20,7 +20,7 @@ public final class KingdomsCombat implements ModInitializer {
     @Override public void onInitialize(){
         var configPath=FabricLoader.getInstance().getConfigDir().resolve("kingdoms-combat/config.json");startupConfig=CombatStore.read(configPath,CombatConfig.class,new CombatConfig());startupConfig.validate();CombatStore.write(configPath,startupConfig);
         var ready=Identifier.parse("kingdomscombat:ready");ServerLifecycleEvents.SERVER_STARTED.addPhaseOrdering(Identifier.parse("kingdoms:ready"),ready);
-        ServerLifecycleEvents.SERVER_STARTED.register(ready,server->{service=new CombatService(server,startupConfig,configPath,server.getWorldPath(LevelResource.ROOT).resolve("kingdoms-combat/state.json"));BalanceTop.register(server.getCommands().getDispatcher());SellMarket.register(server.getCommands().getDispatcher());});
+        ServerLifecycleEvents.SERVER_STARTED.register(ready,server->{service=new CombatService(server,startupConfig,configPath,server.getWorldPath(LevelResource.ROOT).resolve("kingdoms-combat/state.json"));BalanceTop.register(server.getCommands().getDispatcher());SellMarket.register(server.getCommands().getDispatcher());WorthCommand.register(server.getCommands().getDispatcher());});
         ServerLifecycleEvents.SERVER_STOPPING.register(server->{if(service!=null)service.stop();});ServerLifecycleEvents.SERVER_STOPPED.register(server->service=null);
         ServerTickEvents.END_SERVER_TICK.register(server->{if(service!=null)service.tick();});
         ServerLivingEntityEvents.AFTER_DAMAGE.register((entity,source,base,taken,blocked)->{if(entity instanceof ServerPlayer p&&service!=null)service.damage(p,source,base,taken,blocked);});
