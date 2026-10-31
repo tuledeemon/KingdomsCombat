@@ -1,4 +1,8 @@
-# Release verification — 1.7.0
+# Release verification — 1.7.1
+
+101 unit tests and 382 dedicated-server checks passed in the baseline profile; 387 dedicated-server checks passed with C2ME 0.4.1-beta.1.0+26.2 and HuskHomes 4.11-9ed80cc enabled. Both runs used Kingdoms 1.13.0, EconomyCraft 1.10.0, LuckPerms 5.5.85 and Simple Voice Chat 2.6.22 on Minecraft 26.2 / Java 25. Emerald-click checks cover immediate wallet payment without closing, cleared durable inputs, 100 repeated clicks, a second batch in the same menu, repeated close/removal, unsellable-price rejection, failed ledger writes and safe retry. The full existing inventory, economy, arena and event-area regression suite passes. No production-server, graphical-client or 100-connected-player load test was performed.
+
+## Previous release — 1.7.0
 
 101 unit tests and 375 dedicated-server checks passed with Kingdoms 1.12.2 and EconomyCraft 1.10.0. Native event-area checks cover two-corner commands and exact bounds, independent cuboids in the same chunk, in-place menus and per-area toggles, native breaking/placement and staff edits, PvP, local explosion terrain decisions without entity immunity, fluid/piston boundaries, fire/mob/container controls, button release, reload persistence, overlap/permission denial, kingdom reservation, tournament-territory precedence and GUI-only scoped unclaiming. Unit checks cover inclusive/negative/vertical bounds, independent flags, full-world-size indexing without chunk expansion, 4,096 areas, serialization and invalid bounds. Existing arena, totem, sell/worth, recovery and other checks remain passing. No graphical-client or production-server test.
 

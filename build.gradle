@@ -1,5 +1,5 @@
 plugins { id 'net.fabricmc.fabric-loom' version '1.16.3' }
-version = '1.7.0'
+version = '1.7.1'
 group = 'com.celik.kingdomscombat'
 base { archivesName = 'kingdoms-combat' }
 repositories { mavenCentral() }
@@ -26,7 +26,7 @@ loom {
     mods { kingdoms_combat { sourceSet sourceSets.main }; kingdoms_combat_test { sourceSet sourceSets.integration } }
     runs { integration { server(); source sourceSets.integration; runDir 'run-test'; vmArg '-Dkingdomscombat.integration=true' } }
 }
-tasks.named('runIntegration') {
+tasks.matching { it.name.equalsIgnoreCase('runIntegration') }.configureEach {
     doFirst {
         file('run-test').mkdirs()
         file('run-test/result.txt').text = 'RUNNING\n'

@@ -34,6 +34,7 @@ final class SellIntegration {
             check.accept(menu.getCarried().isEmpty()&&((PenaltyReceipt)p).combat$sellReceipt()!=null,"sell transfers never leave a cursor stack outside the inventory journal");
             p.closeContainer();check.accept(manager.getBalance(p.getUUID(),true)==before+quoted&&!m.deposited(p.getUUID())&&m.data.awards.isEmpty(),"closing the sell menu consumes inputs and credits the EconomyCraft wallet exactly once");
             menu.removed(p);check.accept(manager.getBalance(p.getUUID(),true)==before+quoted,"repeated removal callbacks cannot sell the same contents twice");
+            emerald(service,p,m,check);
             check.accept(m.quote(List.of(new ItemStack(Items.DIAMOND))).total()<100,"one player's sale lowers that item's price for later players");
             m.open(other);SellMarket.SellMenu second=(SellMarket.SellMenu)other.containerMenu;check.accept(m.quote(List.of(new ItemStack(Items.DIAMOND))).total()<100,"another player sees the same server-wide pressure");other.closeContainer();
             time[0]+=3_600_000;check.accept(m.quote(List.of(new ItemStack(Items.DIAMOND))).total()==100,"real elapsed hours recover supply pressure without per-item background ticking");
@@ -74,6 +75,26 @@ final class SellIntegration {
             m.data=savedData;m.config=savedConfig;m.prices=savedPrices;CombatStore.write(m.file,savedData);time[0]=oldTime;
             CombatIntegration.remove(service.server,p);CombatIntegration.remove(service.server,other);
         }
+    }
+    private static void emerald(CombatService service,ServerPlayer p,SellMarket m,BiConsumer<Boolean,String> check)throws Exception{
+        var manager=EconomyCraft.getManager(service.server);
+        p.getInventory().setItem(9,new ItemStack(Items.DIAMOND,4));m.open(p);var menu=(SellMarket.SellMenu)p.containerMenu;menu.clicked(36,0,ContainerInput.PICKUP,p);
+        long before=manager.getBalance(p.getUUID(),true),quote=m.quote(List.of(new ItemStack(Items.DIAMOND,4))).total();
+        menu.clicked(31,0,ContainerInput.PICKUP,p);
+        check.accept(p.containerMenu==menu&&!menu.closed&&menu.input.getItem(0).isEmpty()&&!m.deposited(p.getUUID())&&manager.getBalance(p.getUUID(),true)==before+quote,"emerald click commits the sale and clears saved inputs while keeping the same menu open");
+        long paid=manager.getBalance(p.getUUID(),true);String pressure=CombatStore.JSON.toJson(m.data.supply);
+        for(int i=0;i<100;i++)menu.clicked(31,0,ContainerInput.PICKUP,p);
+        check.accept(manager.getBalance(p.getUUID(),true)==paid&&m.data.awards.isEmpty()&&pressure.equals(CombatStore.JSON.toJson(m.data.supply))&&menu.getCarried().isEmpty(),"100 repeated emerald clicks cannot duplicate payment, supply changes or the emerald icon");
+        p.getInventory().setItem(9,new ItemStack(Items.DIAMOND,2));menu.clicked(36,0,ContainerInput.QUICK_MOVE,p);long second=m.quote(List.of(new ItemStack(Items.DIAMOND,2))).total();menu.clicked(31,0,ContainerInput.PICKUP,p);
+        check.accept(p.containerMenu==menu&&manager.getBalance(p.getUUID(),true)==paid+second&&!m.deposited(p.getUUID()),"same open menu accepts another deposit and sells at the updated shared price");
+        paid=manager.getBalance(p.getUUID(),true);p.closeContainer();menu.removed(p);check.accept(manager.getBalance(p.getUUID(),true)==paid,"closing after emerald checkout cannot pay for already sold items again");
+        p.getInventory().setItem(9,new ItemStack(Items.DIAMOND,3));m.open(p);menu=(SellMarket.SellMenu)p.containerMenu;menu.clicked(36,0,ContainerInput.PICKUP,p);
+        var prices=m.prices;var changed=new HashMap<>(prices);changed.remove("minecraft:diamond");m.prices=changed;menu.clicked(31,0,ContainerInput.PICKUP,p);
+        check.accept(p.containerMenu==menu&&menu.input.getItem(0).getCount()==3&&m.deposited(p.getUUID())&&manager.getBalance(p.getUUID(),true)==paid,"failed emerald quote keeps unsellable deposits and the menu open without payment");m.prices=prices;
+        var backup=m.file.resolveSibling("emerald-test-backup.json");java.nio.file.Files.move(m.file,backup);java.nio.file.Files.createDirectory(m.file);
+        try{menu.clicked(31,0,ContainerInput.PICKUP,p);check.accept(menu.input.getItem(0).getCount()==3&&m.deposited(p.getUUID())&&manager.getBalance(p.getUUID(),true)==paid,"failed emerald ledger save keeps deposits without payment");}
+        finally{java.nio.file.Files.delete(m.file);java.nio.file.Files.move(backup,m.file);}
+        quote=m.quote(List.of(new ItemStack(Items.DIAMOND,3))).total();menu.clicked(31,0,ContainerInput.PICKUP,p);p.closeContainer();check.accept(manager.getBalance(p.getUUID(),true)==paid+quote&&!m.deposited(p.getUUID()),"emerald retry after storage recovery sells once and later close is a no-op");
     }
     private static int total(ServerPlayer p,Item item){int n=0;for(int i=0;i<p.getInventory().getContainerSize();i++)if(p.getInventory().getItem(i).is(item))n+=p.getInventory().getItem(i).getCount();return n;}
     private SellIntegration(){}

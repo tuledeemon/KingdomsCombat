@@ -69,7 +69,7 @@ Held named, protected, filled or otherwise unsellable items are rejected using t
 
 ## Dynamic sell market
 
-Run `/sell`, click or shift-click inventory stacks into the top three rows, then close the menu to sell them. Clicking a deposited stack takes it back. The footer shows the estimated total; the chest button returns items and cancels, and the door button closes and sells. Cursor dragging, number-key swaps and creative cloning are intentionally blocked; the menu moves entire stacks directly so every transfer can be saved safely. Normal inventory clicking works without holding an item on the cursor.
+Run `/sell`, click or shift-click inventory stacks into the top three rows, then click the emerald to sell them immediately while keeping the menu open. You can deposit another batch and sell again in the same menu. Closing the menu still sells any remaining deposits. Clicking a deposited stack takes it back. The emerald shows the estimated total and sells at the current checkout price; the chest button returns items and cancels, and the door button closes and sells. Cursor dragging, number-key swaps and creative cloning are intentionally blocked; the menu moves entire stacks directly so every transfer can be saved safely. Normal inventory clicking works without holding an item on the cursor.
 
 Items with a custom name, including an anvil name or custom item-name component, cannot be sold. Kingdoms artifacts, fixers and core tokens are rejected as well. Containers with contents are never sold; EconomyCraft's item resolution and damaged-item restrictions still apply. Unrecognized or disabled prices are not accepted. Removing a price before checkout retains the deposited items for retrieval.
 

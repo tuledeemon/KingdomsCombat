@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.7.1
+
+- Make the sell-menu emerald sell current deposits immediately without closing. Refresh the total and accept further deposits in the same menu.
+- Share checkout with close-to-sell, preserving durable inputs, shared supply and receipt-backed pending payments.
+- Verify repeated-click/close safety, repeat sales, changed-price rejection and storage-failure retry.
+- Match integration task names without case sensitivity so Turkish locale cannot skip fixture setup and result validation.
+
 ## 1.7.0
 
 - Add persistent named event-area cuboids with per-admin two-corner selection, explicit/relative coordinates, independent flag menus, saved-area browsing and scoped unclaiming.
