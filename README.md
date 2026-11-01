@@ -4,6 +4,8 @@ A separate **server-only Fabric 26.2 addon** for [Kingdoms](https://github.com/t
 
 **No client mod or resource pack is needed.** Custom menus, messages, titles and the countdown use Kingdoms' small-caps style.
 
+**1.7.2:** Successful Riptide launches refresh existing user timers. Optional per-player Riptide cooldown defaults to disabled (`0` seconds); configure with `/combatadmin set riptideCooldownSeconds 5`.
+
 **1.7.1:** Click the emerald in `/sell` to sell deposited items immediately and keep the menu open. Closing still sells remaining deposits; repeated clicks cannot resell cleared inputs.
 
 **1.7.0:** Add permanent event-area cuboids selected with two corners. `/eventhost area` opens the flag menu for the area you stand inside, with independent settings and unclaiming. [Area guide](STAFF_EVENTS_GUIDE.md#permanent-event-areas).
@@ -41,7 +43,7 @@ A separate **server-only Fabric 26.2 addon** for [Kingdoms](https://github.com/t
 ## Default rules
 
 - PvP hits tag both players for **20 seconds**. Logging out while combat tagged causes a normal Minecraft death.
-- Successful ender pearl throws, wind charge uses and spear **Lunge enchantment impulses** refresh only the user's existing timers.
+- Successful ender pearl throws, wind charge uses and spear **Lunge enchantment impulses** and **Riptide launches** refresh only the user's existing timers.
 - Killing your opponent ends that fight. If another opponent remains, their timer continues.
 - Active war refreshes a **20-second teleport lock** for participating kingdom members. Preparation adds no war lock.
 - Standing within **100 blocks horizontally** of a descending or capturable AirDrop refreshes a **20-second teleport lock**. Any winning side, cancellation or expiry stops refreshing it.

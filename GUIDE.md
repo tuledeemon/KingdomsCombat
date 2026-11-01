@@ -27,6 +27,7 @@ While you already have an active timer, these successful actions refresh **your*
 - Throwing an ender pearl.
 - Using a wind charge.
 - Receiving your spear's actual **Lunge enchantment impulse**.
+- Successfully launching with **Riptide**.
 
 The use itself does not refresh an opponent's timer. A normal PvP hit still tags both sides. Failed/cooldown-blocked item uses do not count, and movement items used while safe do not create a fresh combat tag.
 
@@ -157,7 +158,7 @@ Durations accept **1–86400 seconds**. Radius accepts **1–10000 blocks**. Pol
 | `tagCreativePlayers`, `tagSpectators` | `false` |
 | `killEndsCombat` | `true` |
 | `killClearsAllOpponents` | `false` |
-| `resetOnEnderPearl`, `resetOnWindCharge`, `resetOnSpearLunge` | `true` |
+| `resetOnEnderPearl`, `resetOnWindCharge`, `resetOnSpearLunge`, `resetOnRiptide` | `true` |
 | `killOnCombatLogout` | `true` |
 | `killOnWarLogout`, `killOnAirDropLogout` | `false` |
 | `punishDuringShutdown` | `false` |
@@ -211,3 +212,14 @@ Correct disk-space, path or filesystem-permission problems shown in the server l
 Ender chests cannot be opened while a player's PvP combat tag is active. Receiving a tag closes an already-open ender chest, and stale menu clicks are refused. This includes commands/mods that open the player's ordinary ender-chest inventory. Inventory contents remain unchanged.
 
 Ordinary chests remain available under their existing protection rules. War-only and AirDrop-only teleport restrictions do not block ender chests. Staff mode retains its existing combat exemption. Set `blockEnderChestsInCombat` to `false` with `/combatadmin set` to disable this rule.
+
+## Riptide cooldown
+
+Successful Riptide launches refresh only the user's existing timers. Dry attempts, insufficient charge, ordinary trident throws and cooldown-blocked uses do not refresh combat. Riptide while safe does not start a fight.
+
+```text
+/combatadmin set riptideCooldownSeconds 5
+/combatadmin set riptideCooldownSeconds 0
+```
+
+The optional cooldown defaults to **0 (disabled)** and accepts 0–86400 seconds. It is per player, covering both hands and all Riptide tridents. Ordinary trident charging/throwing is unaffected. Expiry uses real time and is saved in `state.json`, surviving reconnects/restarts; expired entries are pruned. Setting zero disables existing cooldown enforcement immediately. Combat `enabled=false` and authorized bypass/staff mode bypass this cooldown. Existing arena/freeze restrictions still apply. Use `/combatadmin set resetOnRiptide false` to disable timer refresh independently of the cooldown.

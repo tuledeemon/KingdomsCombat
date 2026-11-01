@@ -6,6 +6,7 @@
     "AirDropsAccessor",
     "CommandMixin",
     "MovementItemMixin",
+    "RiptideMixin",
     "LungeMixin",
     "HudMixin",
     "PlayerReceiptMixin",

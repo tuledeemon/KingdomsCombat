@@ -123,9 +123,20 @@ public final class CombatService {
     private void started(ServerPlayer p){
         tell(p,format(config.taggedMessage,p));if(config.titles&&p.connection!=null){p.connection.send(new ClientboundSetTitlesAnimationPacket(5,30,10));p.connection.send(new ClientboundSetTitleTextPacket(text("Combat",config.combatColor)));p.connection.send(new ClientboundSetSubtitleTextPacket(component(p)));}sound(p,config.tagSound);
     }
+    public boolean riptideBlocked(ServerPlayer p){
+        if(!config.enabled||config.riptideCooldownSeconds==0||bypass(p))return false;
+        long remaining=ledger.data.riptideCooldowns.getOrDefault(p.getUUID(),0L)-now();
+        if(remaining<=0)return false;
+        p.sendSystemMessage(text("Riptide cooldown: "+((remaining+999)/1000)+"s",config.errorColor));return true;
+    }
+    public void riptide(ServerPlayer p){
+        if(!config.enabled||bypass(p))return;
+        if(config.riptideCooldownSeconds>0){ledger.data.riptideCooldowns.put(p.getUUID(),now()+config.riptideCooldownSeconds*1000L);dirty=true;}
+        movement(p,"riptide");if(dirty)save();
+    }
     public void movement(ServerPlayer p,String method){
         if(!config.enabled||bypass(p))return;
-        boolean enabled=switch(method){case "ender_pearl"->config.resetOnEnderPearl;case "wind_charge"->config.resetOnWindCharge;case "spear_lunge"->config.resetOnSpearLunge;default->false;};
+        boolean enabled=switch(method){case "ender_pearl"->config.resetOnEnderPearl;case "wind_charge"->config.resetOnWindCharge;case "spear_lunge"->config.resetOnSpearLunge;case "riptide"->config.resetOnRiptide;default->false;};
         if(enabled){status(p);if(ledger.refreshSelf(p.getUUID(),now(),config)){dirty=true;save();}}
     }
     public void death(ServerPlayer p,DamageSource source){UUID killer=source.getEntity() instanceof ServerPlayer other?other.getUUID():null;ledger.death(p.getUUID(),killer,config);dirty=true;save();}

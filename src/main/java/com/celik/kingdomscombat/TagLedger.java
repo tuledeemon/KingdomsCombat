@@ -14,6 +14,7 @@ public final class TagLedger {
         public int schemaVersion=1;
         public Map<UUID,Tag> tags=new HashMap<>();
         public Map<UUID,UUID> logoutPenalties=new HashMap<>();
+        public Map<UUID,Long> riptideCooldowns=new HashMap<>();
     }
     public record Status(long combatMillis,long warMillis,long airDropMillis,Set<UUID> opponents){
         public long millis(){return Math.max(combatMillis,Math.max(warMillis,airDropMillis));}
@@ -52,6 +53,7 @@ public final class TagLedger {
     }
     public void clear(UUID id){data.tags.remove(id);for(Tag t:data.tags.values())t.opponents.remove(id);}
     public void prune(long now){
+        data.riptideCooldowns.values().removeIf(until->until<=now);
         data.tags.entrySet().removeIf(e->{Tag t=e.getValue();t.opponents.values().removeIf(until->until<=now);t.zones.values().removeIf(until->until<=now);if(t.manualUntil<=now)t.manualUntil=0;return t.opponents.isEmpty()&&t.zones.isEmpty()&&t.manualUntil==0;});
     }
     public static boolean penalty(Status s,CombatConfig c){return c.killOnCombatLogout&&s.combatMillis>0||c.killOnWarLogout&&s.warMillis>0||c.killOnAirDropLogout&&s.airDropMillis>0;}
@@ -63,6 +65,8 @@ public final class TagLedger {
     }
     public static void validate(Data d){
         if(d==null||d.schemaVersion!=1||d.tags==null||d.logoutPenalties==null)throw new IllegalStateException("Invalid combat state.");
+        if(d.riptideCooldowns==null)d.riptideCooldowns=new HashMap<>();
+        if(d.riptideCooldowns.entrySet().stream().anyMatch(e->e.getKey()==null||e.getValue()==null||e.getValue()<0))throw new IllegalStateException("Invalid Riptide cooldown.");
         for(var e:d.tags.entrySet()){Tag t=e.getValue();if(e.getKey()==null||t==null||t.opponents==null||t.zones==null||t.manualUntil<0||t.opponents.entrySet().stream().anyMatch(x->x.getKey()==null||x.getValue()==null||x.getValue()<0)||t.zones.entrySet().stream().anyMatch(x->x.getKey()==null||x.getKey()==Reason.COMBAT||x.getValue()==null||x.getValue()<0))throw new IllegalStateException("Invalid combat tag.");}
         if(d.logoutPenalties.entrySet().stream().anyMatch(e->e.getKey()==null||e.getValue()==null))throw new IllegalStateException("Invalid logout penalty.");
     }

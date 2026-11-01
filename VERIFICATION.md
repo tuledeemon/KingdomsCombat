@@ -1,4 +1,8 @@
-# Release verification — 1.7.1
+# Release verification — 1.7.2
+
+103 unit tests and 398 dedicated-server checks passed with Kingdoms 1.13.1, EconomyCraft 1.10.0, LuckPerms 5.5.85, Simple Voice Chat 2.6.22, HuskHomes 4.11-9ed80cc and C2ME 0.4.1-beta.1.0+26.2 on Minecraft 26.2 / Java 25. Native Riptide checks use water detection and actual trident release/impulse to verify user-only timer refresh, no new safe-player tag, independent refresh toggle, zero-default optional cooldown, blocked impulse/durability/refresh while cooling down, player-wide enforcement across hands/items, independent players, saved expiry, immediate disable at zero, exact expiry and failed dry attempts. Unit checks cover defaults, validation, old saves and expired-entry pruning. All earlier sell/arena/event-area checks pass. No graphical-client, production-server or 100-connected-player load test.
+
+## Previous release — 1.7.1
 
 101 unit tests and 382 dedicated-server checks passed in the baseline profile; 387 dedicated-server checks passed with C2ME 0.4.1-beta.1.0+26.2 and HuskHomes 4.11-9ed80cc enabled. Both runs used Kingdoms 1.13.0, EconomyCraft 1.10.0, LuckPerms 5.5.85 and Simple Voice Chat 2.6.22 on Minecraft 26.2 / Java 25. Emerald-click checks cover immediate wallet payment without closing, cleared durable inputs, 100 repeated clicks, a second batch in the same menu, repeated close/removal, unsellable-price rejection, failed ledger writes and safe retry. The full existing inventory, economy, arena and event-area regression suite passes. No production-server, graphical-client or 100-connected-player load test was performed.
 

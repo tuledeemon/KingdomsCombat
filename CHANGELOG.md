@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.7.2
+
+- Refresh the user's existing combat/zone timers after an actual Riptide launch. Failed uses and ordinary trident throws do not refresh timers.
+- Add optional player-wide, persisted Riptide cooldown; zero seconds by default. Respect cooldown at both charge and release, with normal trident throws unaffected.
+
 ## 1.7.1
 
 - Make the sell-menu emerald sell current deposits immediately without closing. Refresh the total and accept further deposits in the same menu.
