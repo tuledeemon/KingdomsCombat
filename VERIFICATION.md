@@ -1,4 +1,8 @@
-# Release verification — 1.7.2
+# Release verification — 1.7.3
+
+105 unit tests and 409 dedicated-server checks passed with the dependency versions listed under 1.7.2. New pure rules cover the inclusive 300-block 3D boundary, diagonal/vertical distance, cross-dimension rejection and non-finite input. Native pearl-impact tests cover blocked 301-block travel with no teleport damage, allowed exactly-300 teleport, vanilla oldPosition destination, tags starting after the pearl was prepared, expiry before impact, war/AirDrop-only locks, cross-dimension combat rejection and disabling the addon. The allowed-teleport fixture records an online connection because vanilla refuses to teleport disconnected owners. All earlier Riptide, sell, inventory, arena and event-area checks pass. No graphical-client, production-server or 100-connected-player load test was performed.
+
+## Previous release — 1.7.2
 
 103 unit tests and 398 dedicated-server checks passed with Kingdoms 1.13.1, EconomyCraft 1.10.0, LuckPerms 5.5.85, Simple Voice Chat 2.6.22, HuskHomes 4.11-9ed80cc and C2ME 0.4.1-beta.1.0+26.2 on Minecraft 26.2 / Java 25. Native Riptide checks use water detection and actual trident release/impulse to verify user-only timer refresh, no new safe-player tag, independent refresh toggle, zero-default optional cooldown, blocked impulse/durability/refresh while cooling down, player-wide enforcement across hands/items, independent players, saved expiry, immediate disable at zero, exact expiry and failed dry attempts. Unit checks cover defaults, validation, old saves and expired-entry pruning. All earlier sell/arena/event-area checks pass. No graphical-client, production-server or 100-connected-player load test.
 

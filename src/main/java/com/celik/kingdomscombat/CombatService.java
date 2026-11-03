@@ -180,6 +180,12 @@ public final class CombatService {
         if(!config.enabled||bypass(p))return true;
         boolean blocked=!healthy||status(p).active();if(blocked&&notify)denied(p);return !blocked;
     }
+    public boolean allowCombatPearl(ServerPlayer player,net.minecraft.server.level.ServerLevel destination,net.minecraft.world.phys.Vec3 target){
+        if(!config.enabled||bypass(player)||status(player).combatMillis()==0)return true;
+        if(CombatPearlRange.within(player.level()==destination,target.x-player.getX(),target.y-player.getY(),target.z-player.getZ()))return true;
+        long now=now();if(now-lastDenial.getOrDefault(player.getUUID(),0L)>=1000){lastDenial.put(player.getUUID(),now);player.sendSystemMessage(text("Combat pearls are limited to 300 blocks and cannot cross dimensions.",config.errorColor));}
+        return false;
+    }
     public boolean allowDestination(ServerPlayer player,net.minecraft.server.level.ServerLevel level,double x,double y,double z,Set<net.minecraft.world.entity.Relative> relative){
         if(!arenas.internalMove()&&!arenas.allowTeleport(player,level,relative.contains(net.minecraft.world.entity.Relative.X)?x+player.getX():x,relative.contains(net.minecraft.world.entity.Relative.Y)?y+player.getY():y,relative.contains(net.minecraft.world.entity.Relative.Z)?z+player.getZ():z))return false;
         if(arenas.internalMove()||!config.enabled||stopping||staff.internalMove()||bypass(player))return true;

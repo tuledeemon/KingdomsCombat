@@ -223,3 +223,11 @@ Successful Riptide launches refresh only the user's existing timers. Dry attempt
 ```
 
 The optional cooldown defaults to **0 (disabled)** and accepts 0–86400 seconds. It is per player, covering both hands and all Riptide tridents. Ordinary trident charging/throwing is unaffected. Expiry uses real time and is saved in `state.json`, surviving reconnects/restarts; expired entries are pruned. Setting zero disables existing cooldown enforcement immediately. Combat `enabled=false` and authorized bypass/staff mode bypass this cooldown. Existing arena/freeze restrictions still apply. Use `/combatadmin set resetOnRiptide false` to disable timer refresh independently of the cooldown.
+
+## Combat ender pearl range (1.7.3)
+
+While PvP combat tagged, an ender pearl can teleport you at most **300 blocks** from your current position. Distance is straight-line 3D distance, including height; exactly 300 is allowed. Cross-dimension pearl teleports are blocked while PvP tagged because their coordinates do not represent a shared 300-block distance.
+
+The check runs at impact against the same destination vanilla uses (`oldPosition`), before teleport damage or Endermite spawning. A pearl thrown before you became tagged cannot bypass it. If the PvP tag expires before impact, the range limit no longer applies. A rejected pearl is discarded, with no teleport or pearl teleport damage; its item is not refunded.
+
+This is a fixed 300-block rule, active by default with the combat addon. War/AirDrop-only timers do not trigger it. Normal untagged pearl behavior, other teleport commands, and existing staff/bypass exemptions remain unchanged. Existing arena, freeze, incoming-AirDrop and Kingdoms war-pearl protections can still deny an otherwise in-range teleport. Disabling the addon's `enabled` setting also disables this range check.

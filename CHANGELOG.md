@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.7.3
+
+- Limit PvP-tagged ender pearl teleport displacement to 300 blocks in 3D, inclusive at the boundary; reject cross-dimension pearl travel while PvP tagged.
+- Check current combat state and vanilla teleport destination at collision, before impact effects. Discard rejected pearls without refunding an item or causing teleport damage.
+- Preserve ordinary untagged pearls, war/AirDrop-only behavior and existing bypass/protection rules.
+
 ## 1.7.2
 
 - Refresh the user's existing combat/zone timers after an actual Riptide launch. Failed uses and ordinary trident throws do not refresh timers.
