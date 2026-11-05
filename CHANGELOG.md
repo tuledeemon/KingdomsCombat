@@ -1,5 +1,28 @@
 # Changelog
 
+## 1.7.4
+
+- Apply the optional Riptide cooldown only during PvP combat. Safe launches do not create or extend it; war/AirDrop-only locks do not trigger it.
+- Permit Riptide immediately when PvP ends, preserving real-time expiry if combat resumes. Existing refresh and persistence rules remain.
+
+## 1.7.3
+
+- Limit PvP-tagged ender pearl teleport displacement to 300 blocks in 3D, inclusive at the boundary; reject cross-dimension pearl travel while PvP tagged.
+- Check current combat state and vanilla teleport destination at collision, before impact effects. Discard rejected pearls without refunding an item or causing teleport damage.
+- Preserve ordinary untagged pearls, war/AirDrop-only behavior and existing bypass/protection rules.
+
+## 1.7.2
+
+- Refresh the user's existing combat/zone timers after an actual Riptide launch. Failed uses and ordinary trident throws do not refresh timers.
+- Add optional player-wide, persisted Riptide cooldown; zero seconds by default. Respect cooldown at both charge and release, with normal trident throws unaffected.
+
+## 1.7.1
+
+- Make the sell-menu emerald sell current deposits immediately without closing. Refresh the total and accept further deposits in the same menu.
+- Share checkout with close-to-sell, preserving durable inputs, shared supply and receipt-backed pending payments.
+- Verify repeated-click/close safety, repeat sales, changed-price rejection and storage-failure retry.
+- Match integration task names without case sensitivity so Turkish locale cannot skip fixture setup and result validation.
+
 ## 1.7.0
 
 - Add persistent named event-area cuboids with per-admin two-corner selection, explicit/relative coordinates, independent flag menus, saved-area browsing and scoped unclaiming.

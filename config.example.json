@@ -23,6 +23,8 @@
   "resetOnEnderPearl": true,
   "resetOnWindCharge": true,
   "resetOnSpearLunge": true,
+  "resetOnRiptide": true,
+  "riptideCooldownSeconds": 0,
   "killOnCombatLogout": true,
   "killOnWarLogout": false,
   "killOnAirDropLogout": false,

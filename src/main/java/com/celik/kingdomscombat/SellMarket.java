@@ -136,7 +136,7 @@ public final class SellMarket {
         private void refresh(){
             for(int i=27;i<36;i++)input.setItem(i,icon(Items.GLASS_PANE," ",List.of()));
             input.setItem(27,icon(Items.CHEST,"Return items and cancel",List.of("No sale. Items go back into your inventory.","Any overflow remains saved for /sell.")));
-            try{Cart quote=quote(stacks());input.setItem(31,icon(Items.EMERALD,"Total: "+EconomyCraft.formatMoney(quote.total),List.of(quote.count+" items • close this menu to sell","Click or shift-click a stack to move it.","Named items cannot be sold.","Prices can change until checkout.")));}
+            try{Cart quote=quote(stacks());input.setItem(31,icon(Items.EMERALD,"Sell now: "+EconomyCraft.formatMoney(quote.total),List.of(quote.count+" items • click to sell and keep this menu open","Click or shift-click a stack to move it.","Named items cannot be sold.","Prices can change until checkout.")));}
             catch(Exception e){input.setItem(31,icon(Items.BARRIER,"Take back unsellable items",List.of("An item or price changed. Nothing will be deleted.")));}
             input.setItem(35,icon(Items.OAK_DOOR,"Close and sell",List.of("Shared supply changes prices for everyone.","Prices recover over time.")));
         }
@@ -145,6 +145,7 @@ public final class SellMarket {
             if(p!=player||closed||!stillValid(p))return;
             if(!getCarried().isEmpty()){tell(player,"Put the cursor item back first.",true);return;}
             if(index==27&&type==ContainerInput.PICKUP){cancel=true;player.closeContainer();return;}
+            if(index==31&&type==ContainerInput.PICKUP){checkout();refresh();broadcastChanges();return;}
             if(index==35&&type==ContainerInput.PICKUP){player.closeContainer();return;}
             if(type!=ContainerInput.PICKUP&&type!=ContainerInput.QUICK_MOVE||index<0||index>=slots.size()||index>=27&&index<36)return;
             if(slots.get(index).getItem().isEmpty())return;
@@ -165,11 +166,14 @@ public final class SellMarket {
             refresh();broadcastChanges();
         }
         private void refund(){transaction(()->{for(int i=0;i<27;i++)move(i);});}
+        private void checkout(){
+            try{check();Cart q=quote(stacks());if(q.count>0){var manager=EconomyCraft.getManager(service.server);long pending=data.awards.stream().filter(a->a.player.equals(player.getUUID())).mapToLong(a->a.amount).reduce(0,Math::addExact);if(Math.addExact(Math.addExact(Optional.ofNullable(manager.getBalance(player.getUUID(),true)).orElse(0L),pending),q.total)>EconomyManager.MAX)throw new IllegalArgumentException("Your balance would exceed EconomyCraft’s limit.");Data next=copy();next.inputs.remove(player.getUUID());next.supply.putAll(q.supply);Award a=new Award();a.player=player.getUUID();a.amount=q.total;next.awards.add(a);store(next);for(int i=0;i<27;i++)input.setItem(i,ItemStack.EMPTY);pay(a);}}
+            catch(Exception e){tell(player,"Nothing sold: "+e.getMessage()+" Your items are saved in /sell.",true);}
+        }
         @Override public void removed(Player p){
             if(closed)return;closed=true;
             if(cancel||!eligible(player)){refund();super.removed(p);return;}
-            try{check();Cart q=quote(stacks());if(q.count>0){var manager=EconomyCraft.getManager(service.server);long pending=data.awards.stream().filter(a->a.player.equals(player.getUUID())).mapToLong(a->a.amount).reduce(0,Math::addExact);if(Math.addExact(Math.addExact(Optional.ofNullable(manager.getBalance(player.getUUID(),true)).orElse(0L),pending),q.total)>EconomyManager.MAX)throw new IllegalArgumentException("Your balance would exceed EconomyCraft’s limit.");Data next=copy();next.inputs.remove(player.getUUID());next.supply.putAll(q.supply);Award a=new Award();a.player=player.getUUID();a.amount=q.total;next.awards.add(a);store(next);for(int i=0;i<27;i++)input.setItem(i,ItemStack.EMPTY);pay(a);}}
-            catch(Exception e){tell(player,"Nothing sold: "+e.getMessage()+" Your items are saved in /sell.",true);}
+            checkout();
             super.removed(p);
         }
     }

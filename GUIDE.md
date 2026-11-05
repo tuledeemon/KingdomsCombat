@@ -27,6 +27,7 @@ While you already have an active timer, these successful actions refresh **your*
 - Throwing an ender pearl.
 - Using a wind charge.
 - Receiving your spear's actual **Lunge enchantment impulse**.
+- Successfully launching with **Riptide**.
 
 The use itself does not refresh an opponent's timer. A normal PvP hit still tags both sides. Failed/cooldown-blocked item uses do not count, and movement items used while safe do not create a fresh combat tag.
 
@@ -157,7 +158,7 @@ Durations accept **1–86400 seconds**. Radius accepts **1–10000 blocks**. Pol
 | `tagCreativePlayers`, `tagSpectators` | `false` |
 | `killEndsCombat` | `true` |
 | `killClearsAllOpponents` | `false` |
-| `resetOnEnderPearl`, `resetOnWindCharge`, `resetOnSpearLunge` | `true` |
+| `resetOnEnderPearl`, `resetOnWindCharge`, `resetOnSpearLunge`, `resetOnRiptide` | `true` |
 | `killOnCombatLogout` | `true` |
 | `killOnWarLogout`, `killOnAirDropLogout` | `false` |
 | `punishDuringShutdown` | `false` |
@@ -211,3 +212,22 @@ Correct disk-space, path or filesystem-permission problems shown in the server l
 Ender chests cannot be opened while a player's PvP combat tag is active. Receiving a tag closes an already-open ender chest, and stale menu clicks are refused. This includes commands/mods that open the player's ordinary ender-chest inventory. Inventory contents remain unchanged.
 
 Ordinary chests remain available under their existing protection rules. War-only and AirDrop-only teleport restrictions do not block ender chests. Staff mode retains its existing combat exemption. Set `blockEnderChestsInCombat` to `false` with `/combatadmin set` to disable this rule.
+
+## Riptide cooldown
+
+Successful Riptide launches refresh only the user's existing timers. Dry attempts, insufficient charge, ordinary trident throws and cooldown-blocked uses do not refresh combat. Riptide while safe does not start a fight.
+
+```text
+/combatadmin set riptideCooldownSeconds 5
+/combatadmin set riptideCooldownSeconds 0
+```
+
+The optional cooldown defaults to **0 (disabled)** and accepts 0–86400 seconds. Since 1.7.4 it starts and blocks only while **PvP combat tagged**. Safe players and war/AirDrop-only timers do not trigger it. Leaving PvP permits Riptide immediately; out-of-combat launches do not extend a pending cooldown. If PvP resumes before that saved expiry, its remaining time applies again. It is per player, covering both hands and all Riptide tridents. Ordinary trident charging/throwing is unaffected. Expiry uses real time and is saved in `state.json`, surviving reconnects/restarts; expired entries are pruned. Setting zero disables existing cooldown enforcement immediately. Combat `enabled=false` and authorized bypass/staff mode bypass this cooldown. Existing arena/freeze restrictions still apply. Use `/combatadmin set resetOnRiptide false` to disable timer refresh independently of the cooldown.
+
+## Combat ender pearl range (1.7.3)
+
+While PvP combat tagged, an ender pearl can teleport you at most **300 blocks** from your current position. Distance is straight-line 3D distance, including height; exactly 300 is allowed. Cross-dimension pearl teleports are blocked while PvP tagged because their coordinates do not represent a shared 300-block distance.
+
+The check runs at impact against the same destination vanilla uses (`oldPosition`), before teleport damage or Endermite spawning. A pearl thrown before you became tagged cannot bypass it. If the PvP tag expires before impact, the range limit no longer applies. A rejected pearl is discarded, with no teleport or pearl teleport damage; its item is not refunded.
+
+This is a fixed 300-block rule, active by default with the combat addon. War/AirDrop-only timers do not trigger it. Normal untagged pearl behavior, other teleport commands, and existing staff/bypass exemptions remain unchanged. Existing arena, freeze, incoming-AirDrop and Kingdoms war-pearl protections can still deny an otherwise in-range teleport. Disabling the addon's `enabled` setting also disables this range check.

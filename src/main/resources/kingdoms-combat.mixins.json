@@ -6,6 +6,8 @@
     "AirDropsAccessor",
     "CommandMixin",
     "MovementItemMixin",
+    "CombatPearlRangeMixin",
+    "RiptideMixin",
     "LungeMixin",
     "HudMixin",
     "PlayerReceiptMixin",

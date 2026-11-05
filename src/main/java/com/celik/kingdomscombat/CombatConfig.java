@@ -27,7 +27,8 @@ public final class CombatConfig {
     public boolean airDropBlockIncomingTeleports=true;
     public double airDropRadius=100, airDropVerticalTolerance=-1;
     public boolean horizontalAirDropRadius=true;
-    public boolean resetOnEnderPearl=true, resetOnWindCharge=true, resetOnSpearLunge=true;
+    public boolean resetOnEnderPearl=true, resetOnWindCharge=true, resetOnSpearLunge=true, resetOnRiptide=true;
+    public int riptideCooldownSeconds=0;
     public boolean killOnCombatLogout=true, killOnWarLogout=false, killOnAirDropLogout=false;
     public boolean punishDuringShutdown=false;
     public boolean actionBar=true, appendToKingdomsActionBar=true;
@@ -59,6 +60,7 @@ public final class CombatConfig {
     public List<String> blockedCommands=new ArrayList<>(List.of("home","phome","publichome","warp","spawn","tp","teleport","tpo","tphere","tpoffline","tpall","tpa","tpahere","tpaall","tpaccept","tpyes","rtp","back","hub","lobby","server"));
     public List<String> mutedCommands=new ArrayList<>(List.of("me","say","tell","msg","w","teammsg","tm","whisper","message","reply","r"));
     public void validate(){
+        if(riptideCooldownSeconds<0||riptideCooldownSeconds>86400)throw new IllegalArgumentException("Riptide cooldown must be 0–86400 seconds.");
         if(playtimeRoleId==null||!playtimeRoleId.isEmpty()&&!playtimeRoleId.matches("[0-9]{16,20}")||!Double.isFinite(playtimeRoleHours)||playtimeRoleHours<.01||playtimeRoleHours>20000||playtimeRoleCheckSeconds<30||playtimeRoleCheckSeconds>86400||playtimeRoleRetrySeconds<30||playtimeRoleRetrySeconds>86400||playtimeRoleQueueLimit<1||playtimeRoleQueueLimit>100||baltopCacheSeconds<5||baltopCacheSeconds>3600||baltopMaxEntries<10||baltopMaxEntries>100000||baltopPageSize<1||baltopPageSize>28)throw new IllegalArgumentException("Invalid playtime-role or balance leaderboard settings.");
 
         if(arenaCountdownSeconds<3||arenaCountdownSeconds>120||arenaBetweenMatchesSeconds<1||arenaBetweenMatchesSeconds>600||arenaMaxFightSeconds<10||arenaMaxFightSeconds>7200||arenaMaxTeams<2||arenaMaxTeams>256||arenaMaxGates<1||arenaMaxGates>4096||arenaMaxChangedBlocks<1||arenaMaxChangedBlocks>100000||arenaMaxRegionVolume<1||arenaMaxRegionVolume>16000000||arenaMaxRegionChunks<1||arenaMaxRegionChunks>1024||arenaEloStart<0||arenaEloStart>100000||arenaEloK<1||arenaEloK>1000||arenaEloScale<1||arenaEloScale>10000)throw new IllegalArgumentException("Invalid arena settings.");
