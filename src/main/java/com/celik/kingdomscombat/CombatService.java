@@ -124,14 +124,14 @@ public final class CombatService {
         tell(p,format(config.taggedMessage,p));if(config.titles&&p.connection!=null){p.connection.send(new ClientboundSetTitlesAnimationPacket(5,30,10));p.connection.send(new ClientboundSetTitleTextPacket(text("Combat",config.combatColor)));p.connection.send(new ClientboundSetSubtitleTextPacket(component(p)));}sound(p,config.tagSound);
     }
     public boolean riptideBlocked(ServerPlayer p){
-        if(!config.enabled||config.riptideCooldownSeconds==0||bypass(p))return false;
+        if(!config.enabled||config.riptideCooldownSeconds==0||bypass(p)||status(p).combatMillis()==0)return false;
         long remaining=ledger.data.riptideCooldowns.getOrDefault(p.getUUID(),0L)-now();
         if(remaining<=0)return false;
         p.sendSystemMessage(text("Riptide cooldown: "+((remaining+999)/1000)+"s",config.errorColor));return true;
     }
     public void riptide(ServerPlayer p){
         if(!config.enabled||bypass(p))return;
-        if(config.riptideCooldownSeconds>0){ledger.data.riptideCooldowns.put(p.getUUID(),now()+config.riptideCooldownSeconds*1000L);dirty=true;}
+        if(config.riptideCooldownSeconds>0&&status(p).combatMillis()>0){ledger.data.riptideCooldowns.put(p.getUUID(),now()+config.riptideCooldownSeconds*1000L);dirty=true;}
         movement(p,"riptide");if(dirty)save();
     }
     public void movement(ServerPlayer p,String method){

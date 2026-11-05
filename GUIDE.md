@@ -222,7 +222,7 @@ Successful Riptide launches refresh only the user's existing timers. Dry attempt
 /combatadmin set riptideCooldownSeconds 0
 ```
 
-The optional cooldown defaults to **0 (disabled)** and accepts 0–86400 seconds. It is per player, covering both hands and all Riptide tridents. Ordinary trident charging/throwing is unaffected. Expiry uses real time and is saved in `state.json`, surviving reconnects/restarts; expired entries are pruned. Setting zero disables existing cooldown enforcement immediately. Combat `enabled=false` and authorized bypass/staff mode bypass this cooldown. Existing arena/freeze restrictions still apply. Use `/combatadmin set resetOnRiptide false` to disable timer refresh independently of the cooldown.
+The optional cooldown defaults to **0 (disabled)** and accepts 0–86400 seconds. Since 1.7.4 it starts and blocks only while **PvP combat tagged**. Safe players and war/AirDrop-only timers do not trigger it. Leaving PvP permits Riptide immediately; out-of-combat launches do not extend a pending cooldown. If PvP resumes before that saved expiry, its remaining time applies again. It is per player, covering both hands and all Riptide tridents. Ordinary trident charging/throwing is unaffected. Expiry uses real time and is saved in `state.json`, surviving reconnects/restarts; expired entries are pruned. Setting zero disables existing cooldown enforcement immediately. Combat `enabled=false` and authorized bypass/staff mode bypass this cooldown. Existing arena/freeze restrictions still apply. Use `/combatadmin set resetOnRiptide false` to disable timer refresh independently of the cooldown.
 
 ## Combat ender pearl range (1.7.3)
 

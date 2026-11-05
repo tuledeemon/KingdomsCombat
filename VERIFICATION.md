@@ -1,4 +1,8 @@
-# Release verification — 1.7.3
+# Release verification — 1.7.4
+
+105 unit tests and 414 dedicated-server checks passed with the dependency versions listed below. New native Riptide checks verify that safe launches do not start a configured cooldown, leaving PvP permits an immediate launch without extending the saved expiry, war/AirDrop-only locks do not trigger cooldown, and remaining real-time cooldown is enforced if PvP resumes. Existing Riptide refresh, save/load, exact-expiry, dry-use, pearl range, sell, arena and event-area checks pass. No graphical-client, production-server or 100-connected-player load test was performed.
+
+## Previous release — 1.7.3
 
 105 unit tests and 409 dedicated-server checks passed with the dependency versions listed under 1.7.2. New pure rules cover the inclusive 300-block 3D boundary, diagonal/vertical distance, cross-dimension rejection and non-finite input. Native pearl-impact tests cover blocked 301-block travel with no teleport damage, allowed exactly-300 teleport, vanilla oldPosition destination, tags starting after the pearl was prepared, expiry before impact, war/AirDrop-only locks, cross-dimension combat rejection and disabling the addon. The allowed-teleport fixture records an online connection because vanilla refuses to teleport disconnected owners. All earlier Riptide, sell, inventory, arena and event-area checks pass. No graphical-client, production-server or 100-connected-player load test was performed.
 

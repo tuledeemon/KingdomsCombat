@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.7.4
+
+- Apply the optional Riptide cooldown only during PvP combat. Safe launches do not create or extend it; war/AirDrop-only locks do not trigger it.
+- Permit Riptide immediately when PvP ends, preserving real-time expiry if combat resumes. Existing refresh and persistence rules remain.
+
 ## 1.7.3
 
 - Limit PvP-tagged ender pearl teleport displacement to 300 blocks in 3D, inclusive at the boundary; reject cross-dimension pearl travel while PvP tagged.

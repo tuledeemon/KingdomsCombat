@@ -4,6 +4,8 @@ A separate **server-only Fabric 26.2 addon** for [Kingdoms](https://github.com/t
 
 **No client mod or resource pack is needed.** Custom menus, messages, titles and the countdown use Kingdoms' small-caps style.
 
+**1.7.4:** Riptide cooldown starts and blocks only while PvP combat tagged. Safe players and war/AirDrop-only locks can use Riptide freely.
+
 **1.7.3:** PvP-tagged players cannot pearl-teleport farther than 300 blocks, including height, or across dimensions. The rule checks combat status and the actual vanilla destination at impact.
 
 **1.7.2:** Successful Riptide launches refresh existing user timers. Optional per-player Riptide cooldown defaults to disabled (`0` seconds); configure with `/combatadmin set riptideCooldownSeconds 5`.
